@@ -52,20 +52,16 @@ export const WallTool: React.FC = () => {
         };
 
         const onStart = (e: ToolEvent) => {
-            const { id, type, touches } = e;
             const x = e.x * scale;
             const y = e.y * scale;
-            if (type === 'touch' && touches!.length > 1) {
-                cancel(id);
+            if (stylusMode && e.type === 'touch') return;
+            if (e.type === 'touch' && e.touches!.length > 1) {
+                cancel(e.id);
                 return;
             }
-            if (stylusMode && type === 'touch') {
-                return;
-            } else {
-                updateGlobalState({ pointerDown: true });
-            }
+            updateGlobalState({ pointerDown: true });
             const wall: Line = {
-                editId: id,
+                editId: e.id,
                 p1: { x, y },
                 p2: { x, y },
             };
@@ -86,10 +82,10 @@ export const WallTool: React.FC = () => {
         };
 
         const onMove = (e: ToolEvent) => {
-            const { id } = e;
+            if (e.type === 'mouse' && !e.buttons) return;
             const x = e.x * scale;
             const y = e.y * scale;
-            const wall = plan.walls.find((x) => x.editId === id);
+            const wall = plan.walls.find((x) => x.editId === e.id);
             if (wall) {
                 wall.p2.x = x;
                 wall.p2.y = y;

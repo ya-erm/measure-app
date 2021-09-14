@@ -24,13 +24,9 @@ export const CursorTool: React.FC = () => {
         };
 
         const onStart = (e: ToolEvent) => {
-            const { type, changedTouches } = e;
-            if (stylusMode && type === 'touch') {
-                return;
-            } else {
-                updateGlobalState({ pointerDown: true });
-            }
-            changedTouches?.forEach((touch) => {
+            if (stylusMode && e.type === 'touch') return;
+            updateGlobalState({ pointerDown: true });
+            e.changedTouches?.forEach((touch) => {
                 const id = touch.identifier;
                 const x = touch.pageX * scale;
                 const y = touch.pageY * scale;
@@ -44,8 +40,8 @@ export const CursorTool: React.FC = () => {
         };
 
         const onMove = (e: ToolEvent) => {
-            const { changedTouches } = e;
-            changedTouches?.forEach((touch) => {
+            if (e.type === 'mouse' && !e.buttons) return;
+            e.changedTouches?.forEach((touch) => {
                 const id = touch.identifier;
                 const x = touch.pageX * scale;
                 const y = touch.pageY * scale;
@@ -61,8 +57,7 @@ export const CursorTool: React.FC = () => {
         };
 
         const onEnd = (e: ToolEvent) => {
-            const { touches, changedTouches } = e;
-            changedTouches?.forEach((touch) => {
+            e.changedTouches?.forEach((touch) => {
                 const id = touch.identifier;
                 plan.walls
                     .flatMap((item) => [item.p1, item.p2])
@@ -83,7 +78,7 @@ export const CursorTool: React.FC = () => {
                     });
             });
             redrawAllLines();
-            if (touches?.length === 0) {
+            if (e.touches?.length === 0) {
                 updateGlobalState({ pointerDown: false });
             }
         };

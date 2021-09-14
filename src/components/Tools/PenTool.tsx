@@ -28,51 +28,40 @@ export const PenTool: React.FC = () => {
         const ctx = canvasRef.current!.getContext('2d')!;
 
         const onStart = (e: ToolEvent) => {
-            const { type, touches } = e;
-            if (type === 'touch' && touches!.length > 1) {
-                return;
-            }
-            if (stylusMode && type === 'touch') {
-                return;
-            } else {
-                updateGlobalState({ pointerDown: true });
-            }
-            const touch = touches && touches[0];
+            if (stylusMode && e.type === 'touch') return;
+            if (e.type === 'touch' && e.touches!.length > 1) return;
+            updateGlobalState({ pointerDown: true });
+            const touch = e.touches && e.touches[0];
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
-            lineWidth = Math.log((touch?.force ?? 0.1) + 1) * 40;
+            lineWidth = Math.log((touch?.force || 0.1) + 1) * 40;
             if (selectedTool === 'pen') {
                 ctx.lineWidth = lineWidth;
                 points.push({ x, y, lineWidth });
             } else {
-                clearCircle(ctx, x, y, 2 * lineWidth);
+                clearCircle(ctx, x, y, 3 * lineWidth);
             }
         };
 
         const onMove = (e: ToolEvent) => {
-            const { type, touches } = e;
-            if (stylusMode && type === 'touch') {
-                return;
-            } else {
-                updateGlobalState({ pointerDown: true });
-            }
-            const touch = touches && touches[0];
+            if (stylusMode && e.type === 'touch') return;
+            if (e.type === 'mouse' && !e.buttons) return;
+            const touch = e.touches && e.touches[0];
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
-            lineWidth = Math.log((touch?.force ?? 0.1) + 1) * 40 * 0.2 + (lineWidth ?? 0) * 0.8;
+            lineWidth = Math.log((touch?.force || 0.1) + 1) * 40 * 0.2 + (lineWidth ?? 0) * 0.8;
             if (selectedTool === 'pen') {
                 points!.push({ x, y, lineWidth });
                 drawStroke(ctx, points!);
             } else {
-                clearCircle(ctx, x, y, 2 * lineWidth);
+                clearCircle(ctx, x, y, 3 * lineWidth);
             }
         };
 
         const onEnd = (e: ToolEvent) => {
-            const { touches } = e;
             points = [];
             lineWidth = 0;
-            if (touches?.length === 0) {
+            if (!e.touches || e.touches.length === 0) {
                 updateGlobalState({ pointerDown: false });
             }
         };

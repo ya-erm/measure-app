@@ -6,6 +6,7 @@ export type ToolEvent = {
     y: number;
 
     type: 'mouse' | 'stylus' | 'touch';
+    buttons?: number;
     touches?: TypedTouch[];
     changedTouches?: TypedTouch[];
 };
@@ -24,6 +25,7 @@ export function registerTool(
             x: e.pageX,
             y: e.pageY,
             type: 'mouse',
+            buttons: e.buttons,
             changedTouches: [
                 {
                     identifier: 1,

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet';
 import './App.css';
 import { GlobalContext, useGlobalState } from './components/GlobalContext';
 import { Settings } from './components/Settings/Settings';
@@ -36,14 +37,19 @@ function App() {
 
     return (
         <GlobalContext.Provider value={globalContext}>
-            <div>
-                <PenTool />
-                <WallTool />
-                <CursorTool />
-                <canvas ref={canvasRef} className="fullScreenCanvas" />
-                <Toolbox />
-                <Settings />
-            </div>
+            <>
+                <Helmet>
+                    <title>Measure App</title>
+                </Helmet>
+                <main>
+                    <PenTool />
+                    <WallTool />
+                    <CursorTool />
+                    <canvas ref={canvasRef} className="fullScreenCanvas" />
+                    <Toolbox />
+                    <Settings />
+                </main>
+            </>
         </GlobalContext.Provider>
     );
 }
