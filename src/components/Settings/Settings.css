@@ -1,0 +1,14 @@
+.settingsList {
+    padding: 10px;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.settingsList > div {
+    margin-bottom: 10px;
+}
+
+.settingsList input[type='checkbox'] {
+    margin-right: 5px;
+}
