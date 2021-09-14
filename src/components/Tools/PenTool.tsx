@@ -15,6 +15,7 @@ export const PenTool: React.FC = () => {
     useEffect(() => {
         canvasRef.current!.width = width;
         canvasRef.current!.height = height;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -67,6 +68,7 @@ export const PenTool: React.FC = () => {
         };
 
         return registerTool(canvas, onStart, onMove, onEnd);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvas, context, scale, stylusMode, magneticMode, selectedTool]);
 
     return <canvas ref={canvasRef} className="fullScreenCanvas" />;

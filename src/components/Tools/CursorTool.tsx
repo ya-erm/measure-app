@@ -84,6 +84,7 @@ export const CursorTool: React.FC = () => {
         };
 
         return registerTool(canvas, onStart, onMove, onEnd);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvas, context, scale, stylusMode, magneticMode, selectedTool]);
 
     return null;
