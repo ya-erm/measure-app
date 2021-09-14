@@ -1,0 +1,25 @@
+{
+    "React component": {
+        "scope": "typescriptreact",
+        "prefix": "rc",
+        "body": [
+            "import React from 'react';",
+            "",
+            "type I${0:$TM_FILENAME_BASE}Props = {",
+            "}",
+            "",
+            "export const ${0:$TM_FILENAME_BASE}: React.FC<I${0:$TM_FILENAME_BASE}Props> = ({}) => {",
+            "  return (",
+            "    <div>${0:$TM_FILENAME_BASE}</div>",
+            "  );",
+            "}",
+            ""
+        ],
+        "description": "create react component"
+    },
+    "useState": {
+        "scope": "typescript,typescriptreact",
+        "prefix": "us",
+        "body": "const [$1, set${1/(^.)(.*)/${1:/upcase}$2/}] = React.useState(${2|'',false|});"
+    }
+}
