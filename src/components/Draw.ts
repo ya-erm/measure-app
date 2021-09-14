@@ -1,4 +1,4 @@
-import { Line } from './GlobalContext';
+import { Line, Point } from './GlobalContext';
 
 export type DrawEvent = { x: number; y: number; id: number };
 
@@ -38,4 +38,44 @@ export function drawWall(ctx: Context, wall: Line) {
     drawLine(ctx, wall.p1.x, wall.p1.y, wall.p2.x, wall.p2.y);
     drawWallStart(ctx, wall);
     drawWallEnd(ctx, wall);
+}
+
+export type DrawPoint = Point & {
+    lineWidth: number;
+    color?: string;
+};
+
+export function drawStroke(ctx: Context, stroke: DrawPoint[]) {
+    ctx.strokeStyle = 'black';
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    const l = stroke.length - 1;
+    if (stroke.length >= 3) {
+        const xc = (stroke[l].x + stroke[l - 1].x) / 2;
+        const yc = (stroke[l].y + stroke[l - 1].y) / 2;
+        ctx.lineWidth = stroke[l - 1].lineWidth;
+        ctx.quadraticCurveTo(stroke[l - 1].x, stroke[l - 1].y, xc, yc);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(xc, yc);
+    } else {
+        const point = stroke[l];
+        ctx.lineWidth = point.lineWidth;
+        if (point.color) {
+            ctx.strokeStyle = point.color;
+        }
+        ctx.beginPath();
+        ctx.moveTo(point.x, point.y);
+        ctx.stroke();
+    }
+}
+
+export function clearCircle(ctx: Context, x: number, y: number, radius: number = 10) {
+    const prev = ctx.globalCompositeOperation;
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.moveTo(x, y);
+    ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+    ctx.fill();
+    ctx.globalCompositeOperation = prev;
 }

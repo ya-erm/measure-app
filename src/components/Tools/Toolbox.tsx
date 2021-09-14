@@ -3,7 +3,8 @@ import React from 'react';
 import { ReactComponent as WallIcon } from '../../assets/icons/wall.svg';
 import { ReactComponent as CursorIcon } from '../../assets/icons/cursor.svg';
 import { ReactComponent as PencilIcon } from '../../assets/icons/pencil.svg';
-import { ReactComponent as MoveIcon } from '../../assets/icons/move.svg';
+import { ReactComponent as EraserIcon } from '../../assets/icons/eraser.svg';
+// import { ReactComponent as MoveIcon } from '../../assets/icons/move.svg';
 import { IToolType, useGlobalContext } from '../GlobalContext';
 import './Toolbox.css';
 
@@ -39,8 +40,9 @@ export const Toolbox: React.FC<IToolboxProps> = () => {
         <div className="toolboxContainer">
             <ToolBoxItem type="wall" name="Стена" icon={<WallIcon />} />
             <ToolBoxItem type="cursor" name="Курсор" icon={<CursorIcon />} />
-            <ToolBoxItem type="move" name="Рука" icon={<MoveIcon />} />
+            {/* <ToolBoxItem type="move" name="Рука" icon={<MoveIcon />} /> */}
             <ToolBoxItem type="pen" name="Карандаш" icon={<PencilIcon />} />
+            <ToolBoxItem type="eraser" name="Ластик" icon={<EraserIcon />} />
         </div>
     );
 };

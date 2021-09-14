@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useCallback, useState } from 'react';
 
-export type IToolType = 'wall' | 'cursor' | 'move' | 'pen';
+export type IToolType = 'wall' | 'cursor' | 'move' | 'pen' | 'eraser';
 
 export type Point = {
     x: number;

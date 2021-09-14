@@ -3,6 +3,7 @@ import './App.css';
 import { GlobalContext, useGlobalState } from './components/GlobalContext';
 import { Settings } from './components/Settings/Settings';
 import { CursorTool } from './components/Tools/CursorTool';
+import { PenTool } from './components/Tools/PenTool';
 import { Toolbox } from './components/Tools/Toolbox';
 import { WallTool } from './components/Tools/WallTool';
 
@@ -36,6 +37,7 @@ function App() {
     return (
         <GlobalContext.Provider value={globalContext}>
             <div>
+                <PenTool />
                 <WallTool />
                 <CursorTool />
                 <canvas ref={canvasRef} className="fullScreenCanvas" />
