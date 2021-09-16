@@ -1,58 +1,39 @@
-import React, { useEffect, useRef } from 'react';
-import { drawWall, drawWallEnd, drawWallStart, wallCircleRadius } from '../Draw';
+import React, { useEffect } from 'react';
+import { drawWall, drawWallEnd, drawWallStart, wallCircleRadius, wallGroupId } from '../Draw';
 import { distanceBetween, getWallOrientation } from '../Geometry';
 import { Line, useGlobalContext } from '../GlobalContext';
 import { registerTool, ToolEvent } from './ToolEvent';
 
+let IID = 0;
+
 export const WallTool: React.FC = () => {
-    const { globalState, updateGlobalState } = useGlobalContext();
-    const {
-        scale,
-        canvas,
-        context,
-        stylusMode,
-        magneticMode,
-        wallAlignmentMode,
-        selectedTool,
-        plan,
-    } = globalState;
-
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
-    // TODO: on resize
-    const width = window.innerWidth * scale;
-    const height = window.innerHeight * scale;
+    const { interactiveRef, drawing, globalState, updateGlobalState } = useGlobalContext();
+    const { scale, stylusMode, magneticMode, wallAlignmentMode, selectedTool, plan } = globalState;
 
     useEffect(() => {
-        canvasRef.current!.width = width;
-        canvasRef.current!.height = height;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
-        if (!canvas || selectedTool !== 'wall') {
+        if (!interactiveRef.current || selectedTool !== 'wall') {
             return;
         }
 
-        const ctx = canvasRef.current!.getContext('2d')!;
         const redrawEditingLines = () => {
-            ctx.clearRect(0, 0, width, height);
             plan.walls
                 .filter((x) => x.editId)
                 .forEach((wall) => {
-                    drawWall(ctx, wall);
+                    drawWall(drawing, wall);
                 });
         };
 
         const cancel = (id: number) => {
             const wallIndex = plan.walls.findIndex((x) => x.editId === id);
             if (wallIndex >= 0) {
-                plan.walls.splice(wallIndex, 1);
+                const walls = plan.walls.splice(wallIndex, 1);
+                drawing.removeElement(wallGroupId(walls[0]));
                 redrawEditingLines();
             }
         };
 
         const onStart = (e: ToolEvent) => {
+            console.log('wall onStart', e);
             const x = e.x * scale;
             const y = e.y * scale;
             if (stylusMode && e.type === 'touch') return;
@@ -60,8 +41,9 @@ export const WallTool: React.FC = () => {
                 cancel(e.id);
                 return;
             }
-            updateGlobalState({ pointerDown: true });
+            updateGlobalState({ pointerDown: true }); // TODO: это вызывает полный ререндер
             const wall: Line = {
+                id: IID++,
                 editId: e.id,
                 p1: { x, y },
                 p2: { x, y },
@@ -79,7 +61,7 @@ export const WallTool: React.FC = () => {
                 }
             }
             plan.walls.push(wall);
-            drawWallStart(ctx, wall);
+            drawWallStart(drawing, wall);
         };
 
         const onMove = (e: ToolEvent) => {
@@ -102,6 +84,7 @@ export const WallTool: React.FC = () => {
         };
 
         const onEnd = (e: ToolEvent) => {
+            console.log('wall onEnd', e);
             const { id, touches } = e;
             const wall = plan.walls.find((x) => x.editId === id);
             if (wall) {
@@ -118,17 +101,17 @@ export const WallTool: React.FC = () => {
                     }
                 }
                 redrawEditingLines();
-                drawWallEnd(context, wall);
-                drawWall(context, wall);
+                drawWallEnd(drawing, wall);
+                drawWall(drawing, wall);
             }
             if (touches?.length === 0) {
-                updateGlobalState({ pointerDown: false });
+                updateGlobalState({ pointerDown: false }); // TODO: это вызывает полный ререндер
             }
         };
 
-        return registerTool(canvas, onStart, onMove, onEnd);
+        return registerTool(interactiveRef.current, onStart, onMove, onEnd);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvas, context, stylusMode, magneticMode, wallAlignmentMode, selectedTool]);
+    }, [interactiveRef.current, stylusMode, magneticMode, wallAlignmentMode, selectedTool]);
 
-    return <canvas ref={canvasRef} className="fullScreenCanvas" />;
+    return null;
 };

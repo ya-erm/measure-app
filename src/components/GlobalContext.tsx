@@ -1,6 +1,7 @@
-import React, { Dispatch, SetStateAction, useCallback, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useRef, useState } from 'react';
+import { IDrawing, useDrawing } from '../hooks/useDrawing';
 
-export type IToolType = 'wall' | 'cursor' | 'move' | 'pen' | 'eraser';
+export type IToolType = 'wall' | 'cursor' | 'move' | 'pencil' | 'eraser';
 
 export type Point = {
     x: number;
@@ -9,6 +10,7 @@ export type Point = {
 };
 
 export type Line = {
+    id: number;
     p1: Point;
     p2: Point;
     editId?: number;
@@ -20,8 +22,6 @@ export type IPlan = {
 
 export type IGlobalState = {
     scale: number;
-    canvas: HTMLCanvasElement;
-    context: CanvasRenderingContext2D;
     selectedTool: IToolType;
     pointerDown: boolean;
 
@@ -36,11 +36,15 @@ export type IGlobalContext = {
     globalState: IGlobalState;
     setGlobalState: Dispatch<SetStateAction<IGlobalState>>;
     updateGlobalState: (state: Partial<IGlobalState>) => void;
+
+    drawing: IDrawing;
+    drawingRef: React.RefObject<SVGSVGElement>;
+    interactiveRef: React.RefObject<HTMLDivElement>;
 };
 
 export function useGlobalState(): IGlobalContext {
     const defaultState: Partial<IGlobalState> = {
-        scale: 2,
+        scale: 1,
         selectedTool: 'wall',
         pointerDown: false,
 
@@ -59,7 +63,14 @@ export function useGlobalState(): IGlobalContext {
         (update) => setGlobalState((prev) => ({ ...prev, ...update })),
         [],
     );
+
+    const interactiveRef = useRef<HTMLDivElement>(null);
+    const { svgRef: drawingRef, drawing } = useDrawing();
     const context: IGlobalContext = {
+        drawing,
+        drawingRef,
+        interactiveRef,
+
         globalState,
         setGlobalState,
         updateGlobalState,
