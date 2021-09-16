@@ -38,11 +38,8 @@ function App() {
                     <PenTool />
                     <div ref={interactiveRef} className="paper main">
                         <svg ref={drawingRef}>
-                            <mask id="eraser">
-                                <rect width="100%" height="100%" fill="#fff" />
-                            </mask>
+                            <g id="pen" />
                             <g id="walls" />
-                            <g id="pen" mask="url(#eraser)" />
                         </svg>
                     </div>
                     <Toolbox />

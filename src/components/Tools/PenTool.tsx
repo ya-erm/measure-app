@@ -43,11 +43,11 @@ export const PenTool: React.FC = () => {
             } else {
                 id = drawing.drawPath({
                     points,
-                    stroke: '#000',
+                    stroke: '#fff',
                     strokeLinecap: 'round',
                     strokeWidth: lineWidth * 20,
                     fill: 'none',
-                    groupId: 'eraser',
+                    groupId: 'pen',
                 });
                 drawHistory.push({
                     tool: 'eraser',
