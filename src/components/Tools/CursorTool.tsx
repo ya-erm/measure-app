@@ -67,13 +67,12 @@ export const CursorTool: React.FC = () => {
             e.changedTouches?.forEach((touch) => {
                 const id = touch.identifier;
                 plan.walls
-                    .flatMap((item) => [item.p1, item.p2])
+                    .flatMap((w) => [w.p1, w.p2])
                     .filter((x) => x.editId === id)
                     .forEach((p) => {
-                        p.editId = undefined;
                         if (magneticMode) {
                             const closePoint = plan.walls
-                                .flatMap((item) => [item.p1, item.p2])
+                                .flatMap((w) => [w.p1, w.p2])
                                 .filter((o) => o !== p && o.x !== p.x && o.y !== p.y)
                                 .find((o) => distanceBetween(o, p) <= wallCircleRadius);
 
@@ -82,6 +81,13 @@ export const CursorTool: React.FC = () => {
                                 p.y = closePoint.y;
                             }
                         }
+                    });
+                plan.walls
+                    .filter((w) => w.p1.editId || w.p2.editId)
+                    .forEach((w) => {
+                        w.p1.editId = undefined;
+                        w.p2.editId = undefined;
+                        drawWall(drawing, w);
                     });
             });
             if (e.touches?.length === 0) {
