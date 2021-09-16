@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import './App.css';
 import { GlobalContext, useGlobalState } from './components/GlobalContext';
@@ -10,10 +10,8 @@ import { WallTool } from './components/Tools/WallTool';
 
 function App() {
     const globalContext = useGlobalState();
-    const { globalState, updateGlobalState } = globalContext;
-    const { scale, pointerDown } = globalState;
-
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const { drawingRef, interactiveRef, globalState } = globalContext;
+    const { pointerDown } = globalState;
 
     useEffect(() => {
         const onTouchMove = (e: TouchEvent) => {
@@ -27,14 +25,6 @@ function App() {
         };
     }, [pointerDown]);
 
-    useEffect(() => {
-        const canvas = canvasRef.current!;
-        canvas.width = window.innerWidth * scale;
-        canvas.height = window.innerHeight * scale;
-        const context = canvas.getContext('2d')!;
-        updateGlobalState({ canvas, context });
-    }, [scale, updateGlobalState]);
-
     return (
         <GlobalContext.Provider value={globalContext}>
             <>
@@ -42,10 +32,18 @@ function App() {
                     <title>Measure App</title>
                 </Helmet>
                 <main>
-                    <PenTool />
                     <WallTool />
                     <CursorTool />
-                    <canvas ref={canvasRef} className="fullScreenCanvas" />
+                    <PenTool />
+                    <div ref={interactiveRef} className="paper main">
+                        <svg ref={drawingRef}>
+                            <mask id="eraser">
+                                <rect width="100%" height="100%" fill="#fff" />
+                            </mask>
+                            <g id="walls" />
+                            <g id="pen" mask="url(#eraser)" />
+                        </svg>
+                    </div>
                     <Toolbox />
                     <Settings />
                 </main>

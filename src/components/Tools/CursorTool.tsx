@@ -5,23 +5,13 @@ import { useGlobalContext } from '../GlobalContext';
 import { registerTool, ToolEvent } from './ToolEvent';
 
 export const CursorTool: React.FC = () => {
-    const { globalState, updateGlobalState } = useGlobalContext();
-    const { scale, canvas, context, stylusMode, magneticMode, selectedTool, plan } = globalState;
+    const { interactiveRef, drawing, globalState, updateGlobalState } = useGlobalContext();
+    const { scale, stylusMode, magneticMode, selectedTool, plan } = globalState;
 
     useEffect(() => {
-        if (!canvas || selectedTool !== 'cursor') {
+        if (!interactiveRef.current || selectedTool !== 'cursor') {
             return;
         }
-
-        const width = window.innerWidth * scale;
-        const height = window.innerHeight * scale;
-
-        const redrawAllLines = () => {
-            context.clearRect(0, 0, width, height);
-            plan.walls.forEach((wall) => {
-                drawWall(context, wall);
-            });
-        };
 
         const onStart = (e: ToolEvent) => {
             if (stylusMode && e.type === 'touch') return;
@@ -46,14 +36,16 @@ export const CursorTool: React.FC = () => {
                 const x = touch.pageX * scale;
                 const y = touch.pageY * scale;
                 plan.walls
-                    .flatMap((item) => [item.p1, item.p2])
-                    .filter((x) => x.editId === id)
+                    .flatMap((w) => [w.p1, w.p2])
+                    .filter((p) => p.editId === id)
                     .forEach((p) => {
                         p.x = x;
                         p.y = y;
                     });
+                plan.walls
+                    .filter((w) => w.p1.editId || w.p2.editId)
+                    .forEach((w) => drawWall(drawing, w));
             });
-            redrawAllLines();
         };
 
         const onEnd = (e: ToolEvent) => {
@@ -77,15 +69,14 @@ export const CursorTool: React.FC = () => {
                         }
                     });
             });
-            redrawAllLines();
             if (e.touches?.length === 0) {
                 updateGlobalState({ pointerDown: false });
             }
         };
 
-        return registerTool(canvas, onStart, onMove, onEnd);
+        return registerTool(interactiveRef.current, onStart, onMove, onEnd);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvas, context, scale, stylusMode, magneticMode, selectedTool]);
+    }, [interactiveRef.current, scale, stylusMode, magneticMode, selectedTool]);
 
     return null;
 };

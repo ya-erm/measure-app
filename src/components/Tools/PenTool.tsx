@@ -1,32 +1,22 @@
-import React, { useEffect, useRef } from 'react';
-import { clearCircle, DrawPoint, drawStroke } from '../Draw';
-import { useGlobalContext } from '../GlobalContext';
+import React, { useEffect } from 'react';
+import { DrawPoint } from '../Draw';
+import { IToolType, useGlobalContext } from '../GlobalContext';
 import { registerTool, ToolEvent } from './ToolEvent';
 
+const tools: IToolType[] = ['pencil', 'eraser'];
+
 export const PenTool: React.FC = () => {
-    const { globalState, updateGlobalState } = useGlobalContext();
-    const { scale, canvas, context, stylusMode, magneticMode, selectedTool } = globalState;
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
-    // TODO: on resize
-    const width = window.innerWidth * scale;
-    const height = window.innerHeight * scale;
+    const { drawing, interactiveRef, globalState, updateGlobalState } = useGlobalContext();
+    const { scale, stylusMode, magneticMode, selectedTool } = globalState;
 
     useEffect(() => {
-        canvasRef.current!.width = width;
-        canvasRef.current!.height = height;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
-        if (!canvas || (selectedTool !== 'pen' && selectedTool !== 'eraser')) {
+        if (!interactiveRef.current || !tools.includes(selectedTool)) {
             return;
         }
 
-        let lineWidth = 0;
+        let lineWidth = 1;
         let points: DrawPoint[] = [];
-
-        const ctx = canvasRef.current!.getContext('2d')!;
+        let id: string | undefined;
 
         const onStart = (e: ToolEvent) => {
             if (stylusMode && e.type === 'touch') return;
@@ -35,12 +25,25 @@ export const PenTool: React.FC = () => {
             const touch = e.touches && e.touches[0];
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
-            lineWidth = Math.log((touch?.force || 0.1) + 1) * 40;
-            if (selectedTool === 'pen') {
-                ctx.lineWidth = lineWidth;
+            lineWidth = Math.log((touch?.force || 0.1) + 1) * 10;
+            if (selectedTool === 'pencil') {
                 points.push({ x, y, lineWidth });
+                id = drawing.drawPath({
+                    points,
+                    stroke: '#000',
+                    strokeWidth: lineWidth,
+                    fill: 'none',
+                    groupId: 'pen',
+                });
             } else {
-                clearCircle(ctx, x, y, 3 * lineWidth);
+                id = drawing.drawPath({
+                    points,
+                    stroke: '#000',
+                    strokeLinecap: 'round',
+                    strokeWidth: lineWidth * 20,
+                    fill: 'none',
+                    groupId: 'eraser',
+                });
             }
         };
 
@@ -50,13 +53,9 @@ export const PenTool: React.FC = () => {
             const touch = e.touches && e.touches[0];
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
-            lineWidth = Math.log((touch?.force || 0.1) + 1) * 40 * 0.2 + (lineWidth ?? 0) * 0.8;
-            if (selectedTool === 'pen') {
-                points!.push({ x, y, lineWidth });
-                drawStroke(ctx, points!);
-            } else {
-                clearCircle(ctx, x, y, 3 * lineWidth);
-            }
+            lineWidth = Math.log((touch?.force || 0.1) + 1) * 40 * 0.2 + (lineWidth ?? 1) * 0.8;
+            points!.push({ x, y, lineWidth });
+            drawing.drawPath({ id, points });
         };
 
         const onEnd = (e: ToolEvent) => {
@@ -67,9 +66,9 @@ export const PenTool: React.FC = () => {
             }
         };
 
-        return registerTool(canvas, onStart, onMove, onEnd);
+        return registerTool(interactiveRef.current, onStart, onMove, onEnd);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvas, context, scale, stylusMode, magneticMode, selectedTool]);
+    }, [interactiveRef.current, scale, stylusMode, magneticMode, selectedTool]);
 
-    return <canvas ref={canvasRef} className="fullScreenCanvas" />;
+    return null;
 };
