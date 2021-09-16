@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
-import { drawWall, drawWallEnd, drawWallStart, wallCircleRadius, wallGroupId } from '../Draw';
+import { drawWall, drawWallStart, wallCircleRadius, wallGroupId } from '../Draw';
 import { distanceBetween, getWallOrientation } from '../Geometry';
 import { Line, useGlobalContext } from '../GlobalContext';
+import { drawHistory } from '../History/HistoryPanel';
 import { registerTool, ToolEvent } from './ToolEvent';
 
 let IID = 0;
@@ -15,20 +16,11 @@ export const WallTool: React.FC = () => {
             return;
         }
 
-        const redrawEditingLines = () => {
-            plan.walls
-                .filter((x) => x.editId)
-                .forEach((wall) => {
-                    drawWall(drawing, wall);
-                });
-        };
-
         const cancel = (id: number) => {
             const wallIndex = plan.walls.findIndex((x) => x.editId === id);
             if (wallIndex >= 0) {
                 const walls = plan.walls.splice(wallIndex, 1);
                 drawing.removeElement(wallGroupId(walls[0]));
-                redrawEditingLines();
             }
         };
 
@@ -79,7 +71,7 @@ export const WallTool: React.FC = () => {
                         wall.p2.x = wall.p1.x;
                     }
                 }
-                redrawEditingLines();
+                drawWall(drawing, wall);
             }
         };
 
@@ -100,9 +92,11 @@ export const WallTool: React.FC = () => {
                         wall.p2.y = closePoint.y;
                     }
                 }
-                redrawEditingLines();
-                drawWallEnd(drawing, wall);
                 drawWall(drawing, wall);
+                drawHistory.push({
+                    tool: 'wall',
+                    data: [wall],
+                });
             }
             if (touches?.length === 0) {
                 updateGlobalState({ pointerDown: false }); // TODO: это вызывает полный ререндер

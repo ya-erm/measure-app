@@ -125,15 +125,16 @@ export function useDrawing(): UseDrawingReturn {
     const svgRef = useRef<SVGSVGElement>(null);
 
     useEffect(() => {
-        const svg = svgRef.current!;
-        const parent = svg!.parentElement;
+        const svg = svgRef.current;
+        const parent = svg?.parentElement;
+        if (!svg || !parent) return;
         const { width, height } = parent!.getBoundingClientRect();
         svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
         svg.setAttribute('version', '1.1');
         svg.setAttribute('xmlns', SVG_NS);
         svg.setAttribute('width', width.toString());
         svg.setAttribute('height', height.toString());
-    }, []);
+    }, [svgRef]);
 
     const drawing: IDrawing = {
         drawLine: (options) => {
@@ -171,8 +172,8 @@ export function useDrawing(): UseDrawingReturn {
             return id;
         },
         removeElement: (id) => {
-            const element = svgRef.current!.getElementById(id);
-            element.remove();
+            const element = svgRef.current?.getElementById(id);
+            element?.remove();
         },
 
         drawPath: (options) => {

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import './App.css';
 import { GlobalContext, useGlobalState } from './components/GlobalContext';
+import { HistoryPanel } from './components/History/HistoryPanel';
 import { Settings } from './components/Settings/Settings';
 import { CursorTool } from './components/Tools/CursorTool';
 import { PenTool } from './components/Tools/PenTool';
@@ -10,7 +11,7 @@ import { WallTool } from './components/Tools/WallTool';
 
 function App() {
     const globalContext = useGlobalState();
-    const { drawingRef, interactiveRef, globalState } = globalContext;
+    const { drawing, drawingRef, interactiveRef, globalState } = globalContext;
     const { pointerDown } = globalState;
 
     useEffect(() => {
@@ -46,6 +47,7 @@ function App() {
                     </div>
                     <Toolbox />
                     <Settings />
+                    <HistoryPanel drawing={drawing} />
                 </main>
             </>
         </GlobalContext.Provider>

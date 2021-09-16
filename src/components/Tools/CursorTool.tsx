@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { drawWall, wallCircleRadius } from '../Draw';
 import { distanceBetween } from '../Geometry';
-import { useGlobalContext } from '../GlobalContext';
+import { Line, useGlobalContext } from '../GlobalContext';
+import { drawHistory } from '../History/HistoryPanel';
 import { registerTool, ToolEvent } from './ToolEvent';
 
 export const CursorTool: React.FC = () => {
@@ -26,6 +27,20 @@ export const CursorTool: React.FC = () => {
                     .forEach((p) => {
                         p.editId = id;
                     });
+
+                drawHistory.push({
+                    tool: 'cursor',
+                    data: plan.walls
+                        .filter((w) => w.p1.editId || w.p2.editId)
+                        .map((w) => {
+                            const clone: Line = {
+                                id: w.id,
+                                p1: { x: w.p1.x, y: w.p1.y },
+                                p2: { x: w.p2.x, y: w.p2.y },
+                            };
+                            return clone;
+                        }),
+                });
             });
         };
 

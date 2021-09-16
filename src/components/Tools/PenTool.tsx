@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { DrawPoint } from '../Draw';
 import { IToolType, useGlobalContext } from '../GlobalContext';
+import { drawHistory } from '../History/HistoryPanel';
 import { registerTool, ToolEvent } from './ToolEvent';
 
 const tools: IToolType[] = ['pencil', 'eraser'];
@@ -35,6 +36,10 @@ export const PenTool: React.FC = () => {
                     fill: 'none',
                     groupId: 'pen',
                 });
+                drawHistory.push({
+                    tool: 'pencil',
+                    data: id,
+                });
             } else {
                 id = drawing.drawPath({
                     points,
@@ -43,6 +48,10 @@ export const PenTool: React.FC = () => {
                     strokeWidth: lineWidth * 20,
                     fill: 'none',
                     groupId: 'eraser',
+                });
+                drawHistory.push({
+                    tool: 'eraser',
+                    data: id,
                 });
             }
         };
