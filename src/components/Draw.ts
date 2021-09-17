@@ -4,7 +4,7 @@ import { Line, Point } from './GlobalContext';
 export type DrawEvent = { x: number; y: number; id: number };
 
 export type DrawPoint = Point & {
-    lineWidth?: number;
+    pressure?: number;
     color?: string;
 };
 

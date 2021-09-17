@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Convert, PointObject } from '../utils/svg/convert';
+import { getStroke } from 'perfect-freehand';
+import { getSvgPathFromStroke } from '../utils/svg/convert';
 
 type IDrawIdOptions = {
     id?: string;
@@ -38,10 +39,10 @@ type IDrawCircleOptions = {
 } & IDrawShapeOptions &
     IDrawIdOptions;
 
+type IPathPoint = { x: number; y: number; pressure?: number };
+
 type IDrawPathOptions = {
-    points: Array<PointObject>;
-    strokeLinecap?: 'butt' | 'round' | 'square';
-    close?: boolean;
+    points: IPathPoint[];
 } & IDrawShapeOptions &
     IDrawIdOptions;
 
@@ -95,15 +96,6 @@ function setCircleOptions(ellipse: Element, options: IDrawCircleOptions) {
     if (strokeWidth) ellipse.setAttribute('stroke-width', strokeWidth.toString());
 }
 
-function setPathOptions(path: Element, options: IDrawPathOptions) {
-    const { strokeWidth, stroke, fill, strokeLinecap, close = false } = options;
-    if (fill) path.setAttribute('fill', fill);
-    if (stroke) path.setAttribute('stroke', stroke);
-    if (strokeWidth) path.setAttribute('stroke-width', strokeWidth.toString());
-    if (strokeLinecap) path.setAttribute('stroke-linecap', strokeLinecap);
-    path.setAttribute('close', `${close}`);
-}
-
 function findOrCreate(
     svg: SVGSVGElement | null,
     key: string | undefined,
@@ -121,7 +113,7 @@ function findOrCreate(
     return { element, id };
 }
 
-export function useDrawing(): UseDrawingReturn {
+export function useDrawing(scale: number = 1): UseDrawingReturn {
     const svgRef = useRef<SVGSVGElement>(null);
 
     useEffect(() => {
@@ -129,12 +121,12 @@ export function useDrawing(): UseDrawingReturn {
         const parent = svg?.parentElement;
         if (!svg || !parent) return;
         const { width, height } = parent!.getBoundingClientRect();
-        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        svg.setAttribute('viewBox', `0 0 ${width * scale} ${height * scale}`);
         svg.setAttribute('version', '1.1');
         svg.setAttribute('xmlns', SVG_NS);
-        svg.setAttribute('width', width.toString());
-        svg.setAttribute('height', height.toString());
-    }, [svgRef]);
+        svg.setAttribute('width', `${width * scale}`);
+        svg.setAttribute('height', `${height * scale}`);
+    }, [scale, svgRef]);
 
     const drawing: IDrawing = {
         drawLine: (options) => {
@@ -179,10 +171,17 @@ export function useDrawing(): UseDrawingReturn {
         drawPath: (options) => {
             const { id: key, points, groupId } = options;
             const { element: path, id } = findOrCreate(svgRef.current, key, 'path', groupId);
-            setPathOptions(path, options);
-            const converter = new Convert();
-            const commands = converter.bezierCurveCommands(points);
-            path.setAttribute('d', commands.map((c) => c.toString()).join(' '));
+            path.setAttribute(
+                'd',
+                getSvgPathFromStroke(
+                    getStroke(points, {
+                        // TODO: configure drawing options
+                        size: options.strokeWidth,
+                        smoothing: 0.5,
+                        thinning: 0.5,
+                    }),
+                ),
+            );
             return id;
         },
     };

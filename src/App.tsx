@@ -37,7 +37,7 @@ function App() {
                     <CursorTool />
                     <PenTool />
                     <div ref={interactiveRef} className="paper main">
-                        <svg ref={drawingRef}>
+                        <svg ref={drawingRef} style={{ width: '100%', height: '100%' }}>
                             <g id="pen" />
                             <g id="walls" />
                         </svg>

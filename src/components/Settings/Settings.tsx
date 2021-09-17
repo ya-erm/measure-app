@@ -40,6 +40,15 @@ export const Settings: React.FC = () => {
                     Привязка к стенам
                 </label>
             </div>
+
+            <a
+                href="https://perfect-freehand-example.vercel.app/"
+                target="_blank"
+                rel="noreferrer"
+                style={{ marginLeft: 25 }}
+            >
+                Perfect freehand
+            </a>
         </div>
     );
 };

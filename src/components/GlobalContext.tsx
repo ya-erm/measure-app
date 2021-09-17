@@ -44,7 +44,7 @@ export type IGlobalContext = {
 
 export function useGlobalState(): IGlobalContext {
     const defaultState: Partial<IGlobalState> = {
-        scale: 1,
+        scale: 2,
         selectedTool: 'wall',
         pointerDown: false,
 
@@ -65,7 +65,7 @@ export function useGlobalState(): IGlobalContext {
     );
 
     const interactiveRef = useRef<HTMLDivElement>(null);
-    const { svgRef: drawingRef, drawing } = useDrawing();
+    const { svgRef: drawingRef, drawing } = useDrawing(globalState.scale);
     const context: IGlobalContext = {
         drawing,
         drawingRef,

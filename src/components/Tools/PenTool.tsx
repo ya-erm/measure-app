@@ -15,7 +15,6 @@ export const PenTool: React.FC = () => {
             return;
         }
 
-        let lineWidth = 1;
         let points: DrawPoint[] = [];
         let id: string | undefined;
 
@@ -26,13 +25,12 @@ export const PenTool: React.FC = () => {
             const touch = e.touches && e.touches[0];
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
-            lineWidth = Math.log((touch?.force || 0.1) + 1) * 10;
+            points.push({ x, y, pressure: touch?.force ?? 0.5 });
             if (selectedTool === 'pencil') {
-                points.push({ x, y, lineWidth });
                 id = drawing.drawPath({
                     points,
                     stroke: '#000',
-                    strokeWidth: lineWidth,
+                    strokeWidth: scale * 1.5,
                     fill: 'none',
                     groupId: 'pen',
                 });
@@ -44,9 +42,6 @@ export const PenTool: React.FC = () => {
                 id = drawing.drawPath({
                     points,
                     stroke: '#fff',
-                    strokeLinecap: 'round',
-                    strokeWidth: lineWidth * 20,
-                    fill: 'none',
                     groupId: 'pen',
                 });
                 drawHistory.push({
@@ -62,14 +57,12 @@ export const PenTool: React.FC = () => {
             const touch = e.touches && e.touches[0];
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
-            lineWidth = Math.log((touch?.force || 0.1) + 1) * 40 * 0.2 + (lineWidth ?? 1) * 0.8;
-            points!.push({ x, y, lineWidth });
-            drawing.drawPath({ id, points });
+            points!.push({ x, y, pressure: touch?.force ?? 0.5 });
+            drawing.drawPath({ id, points, strokeWidth: scale * 1.5 });
         };
 
         const onEnd = (e: ToolEvent) => {
             points = [];
-            lineWidth = 0;
             if (!e.touches || e.touches.length === 0) {
                 updateGlobalState({ pointerDown: false });
             }
