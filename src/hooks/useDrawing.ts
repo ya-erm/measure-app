@@ -106,7 +106,7 @@ function findOrCreate(
     groupId?: string,
 ) {
     let element = key ? svg?.getElementById(key) : undefined;
-    const id = key ?? `${IID++}`;
+    const id = key ?? `e${IID++}`;
     if (!element) {
         element = document.createElementNS(SVG_NS, type);
         element.setAttribute('id', id);
@@ -183,6 +183,7 @@ export function useDrawing(scale: number = 1): UseDrawingReturn {
         drawPath: (options) => {
             const { id: key, points, groupId } = options;
             const { element: path, id } = findOrCreate(svgRef.current, key, 'path', groupId);
+            if (options.stroke) path.setAttribute('fill', options.stroke);
             path.setAttribute(
                 'd',
                 getSvgPathFromStroke(

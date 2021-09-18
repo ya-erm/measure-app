@@ -26,11 +26,12 @@ export const PenTool: React.FC = () => {
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
             points.push({ x, y, pressure: touch?.force ?? 0.5 });
+            const strokeWidth = scale * (selectedTool === 'eraser' ? 15 : 1.5);
             if (selectedTool === 'pencil') {
                 id = drawing.drawPath({
                     points,
                     stroke: '#000',
-                    strokeWidth: scale * 1.5,
+                    strokeWidth,
                     fill: 'none',
                     groupId: 'pen',
                 });
@@ -42,6 +43,7 @@ export const PenTool: React.FC = () => {
                 id = drawing.drawPath({
                     points,
                     stroke: '#fff',
+                    strokeWidth,
                     groupId: 'pen',
                 });
                 drawHistory.push({
@@ -58,7 +60,8 @@ export const PenTool: React.FC = () => {
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
             points!.push({ x, y, pressure: touch?.force ?? 0.5 });
-            drawing.drawPath({ id, points, strokeWidth: scale * 1.5 });
+            const strokeWidth = scale * (selectedTool === 'eraser' ? 15 : 1.5);
+            drawing.drawPath({ id, points, strokeWidth });
         };
 
         const onEnd = (e: ToolEvent) => {
