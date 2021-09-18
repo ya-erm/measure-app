@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { drawWall, wallCircleRadius } from '../Draw';
-import { distanceBetween } from '../Geometry';
+import { drawGuideLines, drawWall, removeGuideLines, wallCircleRadius } from '../Draw';
+import { distanceBetween, findAllGuideLines } from '../Geometry';
 import { Line, useGlobalContext } from '../GlobalContext';
 import { drawHistory } from '../History/HistoryPanel';
 import { registerTool, ToolEvent } from './ToolEvent';
@@ -50,13 +50,17 @@ export const CursorTool: React.FC = () => {
                 const id = touch.identifier;
                 const x = touch.pageX * scale;
                 const y = touch.pageY * scale;
-                plan.walls
+                const editingPoints = plan.walls
                     .flatMap((w) => [w.p1, w.p2])
-                    .filter((p) => p.editId === id)
-                    .forEach((p) => {
-                        p.x = x;
-                        p.y = y;
-                    });
+                    .filter((p) => p.editId === id);
+                editingPoints.forEach((p) => {
+                    p.x = x;
+                    p.y = y;
+                });
+                if (magneticMode && editingPoints.length > 0) {
+                    const guidLines = findAllGuideLines(plan.walls, editingPoints, { x, y });
+                    drawGuideLines(drawing, editingPoints[0], guidLines);
+                }
                 plan.walls
                     .filter((w) => w.p1.editId || w.p2.editId)
                     .forEach((w) => drawWall(drawing, w));
@@ -73,9 +77,8 @@ export const CursorTool: React.FC = () => {
                         if (magneticMode) {
                             const closePoint = plan.walls
                                 .flatMap((w) => [w.p1, w.p2])
-                                .filter((o) => o !== p && o.x !== p.x && o.y !== p.y)
+                                .filter((o) => o !== p)
                                 .find((o) => distanceBetween(o, p) <= wallCircleRadius);
-
                             if (closePoint) {
                                 p.x = closePoint.x;
                                 p.y = closePoint.y;
@@ -89,6 +92,7 @@ export const CursorTool: React.FC = () => {
                         w.p2.editId = undefined;
                         drawWall(drawing, w);
                     });
+                removeGuideLines(drawing, { editId: id, x: 0, y: 0 });
             });
             if (e.touches?.length === 0) {
                 updateGlobalState({ pointerDown: false });

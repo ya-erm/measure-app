@@ -1,4 +1,5 @@
 import { IDrawing } from '../hooks/useDrawing';
+import { GuideLine } from './Geometry';
 import { Line, Point } from './GlobalContext';
 
 export type DrawEvent = { x: number; y: number; id: number };
@@ -18,8 +19,9 @@ export function drawLine(
     y1: number,
     x2: number,
     y2: number,
+    strokeDashArray?: string,
 ) {
-    ctx.drawLine({ id, groupId, x1, y1, x2, y2 });
+    ctx.drawLine({ id, groupId, x1, y1, x2, y2, strokeDashArray });
 }
 export function drawSquare(
     ctx: Context,
@@ -58,6 +60,7 @@ export const wallPointSize = 10;
 export const wallCircleRadius = 15;
 
 export const wallGroupId = (wall: Line) => `w${wall.id}`;
+export const pointGroupId = (point: Point) => `p${point.editId}`;
 
 export function drawWallStart(ctx: Context, wall: Line) {
     const gid = wallGroupId(wall);
@@ -75,4 +78,27 @@ export function drawWall(ctx: Context, wall: Line) {
     drawLine(ctx, `w${wall.id}l`, gid, wall.p1.x, wall.p1.y, wall.p2.x, wall.p2.y);
     drawWallStart(ctx, wall);
     drawWallEnd(ctx, wall);
+}
+
+export function drawGuideLines(ctx: Context, point: Point, guideLines: GuideLine[]) {
+    const groupId = ctx.createGroup(pointGroupId(point), 'guide');
+    const guideLinesIds = guideLines.map((guideLine) => {
+        const guideLineId = `p${point.editId}g${guideLine.wall.id}`;
+        drawLine(
+            ctx,
+            guideLineId,
+            groupId,
+            point.x,
+            point.y,
+            guideLine.point.x,
+            guideLine.point.y,
+            '10 10',
+        );
+        return guideLineId;
+    });
+    ctx.removeElements((child) => !guideLinesIds.includes((child as Element).id), groupId);
+}
+
+export function removeGuideLines(ctx: Context, point: Point) {
+    ctx.removeElement(pointGroupId(point), 'guide');
 }

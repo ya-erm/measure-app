@@ -39,6 +39,7 @@ function App() {
                     <div ref={interactiveRef} className="paper main">
                         <svg ref={drawingRef} style={{ width: '100%', height: '100%' }}>
                             <g id="pen" />
+                            <g id="guide" />
                             <g id="walls" />
                         </svg>
                     </div>

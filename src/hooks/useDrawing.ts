@@ -10,6 +10,7 @@ type IDrawIdOptions = {
 type IDrawStrokeOptions = {
     stroke?: string;
     strokeWidth?: number;
+    strokeDashArray?: string;
 };
 type IDrawShapeOptions = {
     fill?: string;
@@ -52,7 +53,8 @@ export type IDrawing = {
     drawCircle: (options: IDrawCircleOptions) => string;
     drawRect: (options: IDrawRectOptions) => string;
     drawPath: (options: IDrawPathOptions) => string;
-    removeElement: (id: string) => void;
+    removeElement: (id: string, groupId?: string) => void;
+    removeElements: (predicate: (element: ChildNode) => boolean, groupId?: string) => void;
 };
 
 type UseDrawingReturn = {
@@ -65,13 +67,14 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 let IID = 0;
 
 function setLineOptions(line: Element, options: IDrawLineOptions) {
-    const { x1, x2, y1, y2, strokeWidth, stroke = '#000' } = options;
+    const { x1, x2, y1, y2, strokeWidth, stroke = '#000', strokeDashArray } = options;
     line.setAttribute('x1', x1.toString());
     line.setAttribute('y1', y1.toString());
     line.setAttribute('x2', x2.toString());
     line.setAttribute('y2', y2.toString());
     line.setAttribute('stroke', stroke);
     if (strokeWidth) line.setAttribute('stroke-width', strokeWidth.toString());
+    if (strokeDashArray) line.setAttribute('stroke-dasharray', strokeDashArray);
 }
 
 function setRectOptions(ellipse: Element, options: IDrawRectOptions) {
@@ -163,9 +166,18 @@ export function useDrawing(scale: number = 1): UseDrawingReturn {
             const { id } = findOrCreate(svgRef.current, key, 'g', parentId);
             return id;
         },
-        removeElement: (id) => {
-            const element = svgRef.current?.getElementById(id);
+        removeElement: (id, groupId) => {
+            const group = groupId ? svgRef.current?.getElementById(groupId) : svgRef.current;
+            const element = group?.querySelector(`#${id}`);
             element?.remove();
+        },
+        removeElements: (predicate, groupId) => {
+            const group = groupId ? svgRef.current?.getElementById(groupId) : svgRef.current;
+            group?.childNodes?.forEach((child) => {
+                if (predicate(child)) {
+                    child.remove();
+                }
+            });
         },
 
         drawPath: (options) => {

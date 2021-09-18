@@ -10,7 +10,7 @@ export type Point = {
 };
 
 export type Line = {
-    id: number;
+    id: string;
     p1: Point;
     p2: Point;
     editId?: number;

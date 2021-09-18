@@ -1,6 +1,13 @@
 import React, { useEffect } from 'react';
-import { drawWall, drawWallStart, wallCircleRadius, wallGroupId } from '../Draw';
-import { distanceBetween, getWallOrientation } from '../Geometry';
+import {
+    drawGuideLines,
+    drawWall,
+    drawWallStart,
+    removeGuideLines,
+    wallCircleRadius,
+    wallGroupId,
+} from '../Draw';
+import { distanceBetween, findAlignedGuideLines, getWallOrientation } from '../Geometry';
 import { Line, useGlobalContext } from '../GlobalContext';
 import { drawHistory } from '../History/HistoryPanel';
 import { registerTool, ToolEvent } from './ToolEvent';
@@ -25,7 +32,6 @@ export const WallTool: React.FC = () => {
         };
 
         const onStart = (e: ToolEvent) => {
-            console.log('wall onStart', e);
             const x = e.x * scale;
             const y = e.y * scale;
             if (stylusMode && e.type === 'touch') return;
@@ -35,7 +41,7 @@ export const WallTool: React.FC = () => {
             }
             updateGlobalState({ pointerDown: true }); // TODO: это вызывает полный ререндер
             const wall: Line = {
-                id: IID++,
+                id: `${IID++}`,
                 editId: e.id,
                 p1: { x, y },
                 p2: { x, y },
@@ -65,22 +71,23 @@ export const WallTool: React.FC = () => {
                 wall.p2.x = x;
                 wall.p2.y = y;
                 if (wallAlignmentMode) {
-                    if (getWallOrientation({ p1: wall.p1, p2: { x, y } }) === 'horizontal') {
+                    const orientation = getWallOrientation({ p1: wall.p1, p2: { x, y } });
+                    if (orientation === 'horizontal') {
                         wall.p2.y = wall.p1.y;
                     } else {
                         wall.p2.x = wall.p1.x;
                     }
+                    const guideLines = findAlignedGuideLines(plan.walls, wall);
+                    drawGuideLines(drawing, wall.p2, guideLines);
                 }
                 drawWall(drawing, wall);
             }
         };
 
         const onEnd = (e: ToolEvent) => {
-            console.log('wall onEnd', e);
             const { id, touches } = e;
             const wall = plan.walls.find((x) => x.editId === id);
             if (wall) {
-                wall.editId = undefined;
                 if (magneticMode) {
                     const closePoint = plan.walls
                         .filter((w) => w !== wall)
@@ -92,7 +99,9 @@ export const WallTool: React.FC = () => {
                         wall.p2.y = closePoint.y;
                     }
                 }
+                removeGuideLines(drawing, wall.p2);
                 drawWall(drawing, wall);
+                wall.editId = undefined;
                 drawHistory.push({
                     tool: 'wall',
                     data: [wall],
