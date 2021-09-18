@@ -42,7 +42,7 @@ type IDrawCircleOptions = {
 
 type IPathPoint = { x: number; y: number; pressure?: number };
 
-type IDrawPathOptions = {
+export type IDrawPathOptions = {
     points: IPathPoint[];
 } & IDrawShapeOptions &
     IDrawIdOptions;
@@ -64,7 +64,7 @@ type UseDrawingReturn = {
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-let IID = 0;
+let IID = 0; // TODO: при загрузке плана  возникнет коллизии
 
 function setLineOptions(line: Element, options: IDrawLineOptions) {
     const { x1, x2, y1, y2, strokeWidth, stroke = '#000', strokeDashArray } = options;

@@ -1,50 +1,34 @@
+import { ReactComponent as TrashIcon } from '../../assets/icons/delete.svg';
+import { ReactComponent as RedoIcon } from '../../assets/icons/redo.svg';
 import { ReactComponent as UndoIcon } from '../../assets/icons/undo.svg';
 import { IDrawing } from '../../hooks/useDrawing';
-import { drawWall, wallGroupId } from '../Draw';
-import { Line } from '../GlobalContext';
+import { wallGroupId } from '../Draw';
+import { IPlan, savePlan } from '../GlobalContext';
+import { RoundButton } from '../RoundButton/RoundButton';
 import './HistoryPanel.css';
+import { IHistory } from './useHistory';
 
-export type IHistoryRecord =
-    | {
-          tool: 'wall' | 'cursor';
-          data: Line[];
-      }
-    | {
-          tool: 'pencil' | 'eraser';
-          data: string;
-      };
+type IHistoryPanelProps = {
+    history: IHistory;
 
-export let drawHistory: IHistoryRecord[] = [];
+    drawing: IDrawing;
+    plan: IPlan;
+};
 
-export const HistoryPanel: React.FC<{ drawing: IDrawing }> = ({ drawing }) => {
-    const undo = () => {
-        const item = drawHistory.pop();
-        if (!item) return;
-        switch (item.tool) {
-            case 'wall':
-                item.data.forEach((wall) => {
-                    drawing.removeElement(wallGroupId(wall));
-                });
-                break;
-            case 'cursor':
-                item.data.forEach((wall) => {
-                    drawWall(drawing, wall);
-                });
-                break;
-            case 'pencil':
-            case 'eraser':
-                drawing.removeElement(item.data);
-                break;
+export const HistoryPanel: React.FC<IHistoryPanelProps> = ({ history, drawing, plan }) => {
+    const clear = () => {
+        // eslint-disable-next-line no-restricted-globals
+        if (confirm('Are you sure want to delete all?')) {
+            plan.walls.forEach((w) => drawing.removeElement(wallGroupId(w)));
+            plan.walls = [];
+            savePlan(plan);
         }
     };
     return (
         <div className="historyPanel">
-            <div className="historyPanelItem" onClick={() => undo()}>
-                <UndoIcon />
-            </div>
-            {/* <div className="historyPanelItem" onClick={() => redo()}>
-                <RedoIcon />
-            </div> */}
+            <RoundButton title="Undo" onClick={history.undo} icon={<UndoIcon />} />
+            <RoundButton title="Redo" onClick={history.redo} icon={<RedoIcon />} />
+            <RoundButton title="Clear" onClick={clear} icon={<TrashIcon />} />
         </div>
     );
 };

@@ -2,17 +2,32 @@ import React, { useEffect } from 'react';
 import { drawGuideLines, drawWall, removeGuideLines, wallCircleRadius } from '../Draw';
 import { distanceBetween, findAllGuideLines } from '../Geometry';
 import { Line, useGlobalContext } from '../GlobalContext';
-import { drawHistory } from '../History/HistoryPanel';
 import { registerTool, ToolEvent } from './ToolEvent';
 
+function cloneEditingWalls(walls: Line[]): Line[] {
+    return walls
+        .filter((w) => w.p1.editId || w.p2.editId)
+        .map((w) => {
+            const clone: Line = {
+                id: w.id,
+                p1: { x: w.p1.x, y: w.p1.y },
+                p2: { x: w.p2.x, y: w.p2.y },
+            };
+            return clone;
+        });
+}
+
 export const CursorTool: React.FC = () => {
-    const { interactiveRef, drawing, globalState, updateGlobalState } = useGlobalContext();
+    const { commandsHistory, interactiveRef, drawing, globalState, updateGlobalState } =
+        useGlobalContext();
     const { scale, stylusMode, magneticMode, selectedTool, plan } = globalState;
 
     useEffect(() => {
         if (!interactiveRef.current || selectedTool !== 'cursor') {
             return;
         }
+
+        let _wallBefore: Line[] = [];
 
         const onStart = (e: ToolEvent) => {
             if (stylusMode && e.type === 'touch') return;
@@ -28,19 +43,7 @@ export const CursorTool: React.FC = () => {
                         p.editId = id;
                     });
 
-                drawHistory.push({
-                    tool: 'cursor',
-                    data: plan.walls
-                        .filter((w) => w.p1.editId || w.p2.editId)
-                        .map((w) => {
-                            const clone: Line = {
-                                id: w.id,
-                                p1: { x: w.p1.x, y: w.p1.y },
-                                p2: { x: w.p2.x, y: w.p2.y },
-                            };
-                            return clone;
-                        }),
-                });
+                _wallBefore = cloneEditingWalls(plan.walls);
             });
         };
 
@@ -93,6 +96,14 @@ export const CursorTool: React.FC = () => {
                         drawWall(drawing, w);
                     });
                 removeGuideLines(drawing, { editId: id, x: 0, y: 0 });
+
+                commandsHistory.add({
+                    tool: 'cursor',
+                    data: {
+                        before: _wallBefore,
+                        after: cloneEditingWalls(plan.walls),
+                    },
+                });
             });
             if (e.touches?.length === 0) {
                 updateGlobalState({ pointerDown: false });

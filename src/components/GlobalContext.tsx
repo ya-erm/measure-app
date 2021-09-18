@@ -1,5 +1,15 @@
-import React, { Dispatch, SetStateAction, useCallback, useRef, useState } from 'react';
+import React, {
+    Dispatch,
+    SetStateAction,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { IDrawing, useDrawing } from '../hooks/useDrawing';
+import { drawWall } from './Draw';
+import { IHistory, useHistory } from './History/useHistory';
 
 export type IToolType = 'wall' | 'cursor' | 'move' | 'pencil' | 'eraser';
 
@@ -40,22 +50,44 @@ export type IGlobalContext = {
     drawing: IDrawing;
     drawingRef: React.RefObject<SVGSVGElement>;
     interactiveRef: React.RefObject<HTMLDivElement>;
+
+    commandsHistory: IHistory;
 };
 
-export function useGlobalState(): IGlobalContext {
-    const defaultState: Partial<IGlobalState> = {
-        scale: 2,
-        selectedTool: 'wall',
-        pointerDown: false,
+export function savePlan(plan: IPlan) {
+    localStorage.setItem('plan', JSON.stringify(plan));
+}
 
-        stylusMode: true,
-        magneticMode: true,
-        wallAlignmentMode: true,
-
-        plan: {
-            walls: [],
-        },
+export function loadPlan(json?: string | null): IPlan {
+    const defaultPlan = {
+        walls: [],
     };
+    try {
+        if (!json) return defaultPlan;
+        const plan = JSON.parse(json);
+        console.log('Restored plan', plan);
+        return plan;
+    } catch {
+        console.log('Failed to restore plan');
+    }
+    return defaultPlan;
+}
+
+export function useGlobalState(): IGlobalContext {
+    const defaultState: Partial<IGlobalState> = useMemo(
+        () => ({
+            scale: 2,
+            selectedTool: 'wall',
+            pointerDown: false,
+
+            stylusMode: true,
+            magneticMode: true,
+            wallAlignmentMode: true,
+
+            plan: loadPlan(localStorage.getItem('plan')),
+        }),
+        [],
+    );
 
     const [globalState, setGlobalState] = useState<IGlobalState>(defaultState as any);
 
@@ -64,8 +96,15 @@ export function useGlobalState(): IGlobalContext {
         [],
     );
 
-    const interactiveRef = useRef<HTMLDivElement>(null);
     const { svgRef: drawingRef, drawing } = useDrawing(globalState.scale);
+
+    const commandsHistory = useHistory(drawing, globalState.plan);
+
+    useEffect(() => {
+        defaultState.plan?.walls.forEach((w) => drawWall(drawing, w));
+    }, [drawing, defaultState]);
+
+    const interactiveRef = useRef<HTMLDivElement>(null);
     const context: IGlobalContext = {
         drawing,
         drawingRef,
@@ -74,6 +113,8 @@ export function useGlobalState(): IGlobalContext {
         globalState,
         setGlobalState,
         updateGlobalState,
+
+        commandsHistory,
     };
     return context;
 }

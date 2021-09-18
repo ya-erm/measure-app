@@ -9,13 +9,11 @@ import {
 } from '../Draw';
 import { distanceBetween, findAlignedGuideLines, getWallOrientation } from '../Geometry';
 import { Line, useGlobalContext } from '../GlobalContext';
-import { drawHistory } from '../History/HistoryPanel';
 import { registerTool, ToolEvent } from './ToolEvent';
 
-let IID = 0;
-
 export const WallTool: React.FC = () => {
-    const { interactiveRef, drawing, globalState, updateGlobalState } = useGlobalContext();
+    const { commandsHistory, interactiveRef, drawing, globalState, updateGlobalState } =
+        useGlobalContext();
     const { scale, stylusMode, magneticMode, wallAlignmentMode, selectedTool, plan } = globalState;
 
     useEffect(() => {
@@ -40,8 +38,15 @@ export const WallTool: React.FC = () => {
                 return;
             }
             updateGlobalState({ pointerDown: true }); // TODO: это вызывает полный ререндер
+            const wallId =
+                plan.walls.length > 0
+                    ? Math.max.apply(
+                          null,
+                          plan.walls.map((w) => parseInt(w.id)),
+                      ) + 1
+                    : 1;
             const wall: Line = {
-                id: `${IID++}`,
+                id: `${wallId}`,
                 editId: e.id,
                 p1: { x, y },
                 p2: { x, y },
@@ -102,9 +107,9 @@ export const WallTool: React.FC = () => {
                 removeGuideLines(drawing, wall.p2);
                 drawWall(drawing, wall);
                 wall.editId = undefined;
-                drawHistory.push({
+                commandsHistory.add({
                     tool: 'wall',
-                    data: [wall],
+                    data: { addedWall: wall },
                 });
             }
             if (touches?.length === 0) {

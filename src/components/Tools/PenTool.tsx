@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { DrawPoint } from '../Draw';
 import { IToolType, useGlobalContext } from '../GlobalContext';
-import { drawHistory } from '../History/HistoryPanel';
 import { registerTool, ToolEvent } from './ToolEvent';
 
 const tools: IToolType[] = ['pencil', 'eraser'];
 
 export const PenTool: React.FC = () => {
-    const { drawing, interactiveRef, globalState, updateGlobalState } = useGlobalContext();
+    const { commandsHistory, drawing, interactiveRef, globalState, updateGlobalState } =
+        useGlobalContext();
     const { scale, stylusMode, magneticMode, selectedTool } = globalState;
 
     useEffect(() => {
@@ -18,6 +18,13 @@ export const PenTool: React.FC = () => {
         let points: DrawPoint[] = [];
         let id: string | undefined;
 
+        const getStrokeOptions = () => {
+            return {
+                strokeWidth: scale * (selectedTool === 'eraser' ? 15 : 1.5),
+                stroke: selectedTool === 'pencil' ? '#000' : '#fff',
+            };
+        };
+
         const onStart = (e: ToolEvent) => {
             if (stylusMode && e.type === 'touch') return;
             if (e.type === 'touch' && e.touches!.length > 1) return;
@@ -26,31 +33,13 @@ export const PenTool: React.FC = () => {
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
             points.push({ x, y, pressure: touch?.force ?? 0.5 });
-            const strokeWidth = scale * (selectedTool === 'eraser' ? 15 : 1.5);
-            if (selectedTool === 'pencil') {
-                id = drawing.drawPath({
-                    points,
-                    stroke: '#000',
-                    strokeWidth,
-                    fill: 'none',
-                    groupId: 'pen',
-                });
-                drawHistory.push({
-                    tool: 'pencil',
-                    data: id,
-                });
-            } else {
-                id = drawing.drawPath({
-                    points,
-                    stroke: '#fff',
-                    strokeWidth,
-                    groupId: 'pen',
-                });
-                drawHistory.push({
-                    tool: 'eraser',
-                    data: id,
-                });
-            }
+            const { stroke, strokeWidth } = getStrokeOptions();
+            id = drawing.drawPath({
+                points,
+                stroke,
+                strokeWidth,
+                groupId: 'pen',
+            });
         };
 
         const onMove = (e: ToolEvent) => {
@@ -60,11 +49,17 @@ export const PenTool: React.FC = () => {
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
             points!.push({ x, y, pressure: touch?.force ?? 0.5 });
-            const strokeWidth = scale * (selectedTool === 'eraser' ? 15 : 1.5);
+            const { strokeWidth } = getStrokeOptions();
             drawing.drawPath({ id, points, strokeWidth });
         };
 
         const onEnd = (e: ToolEvent) => {
+            const strokeOptions = getStrokeOptions();
+            commandsHistory.add({
+                tool: selectedTool as 'pencil' | 'eraser',
+                data: { options: { id, points, ...strokeOptions, groupId: 'pen' } },
+            });
+            id = undefined;
             points = [];
             if (!e.touches || e.touches.length === 0) {
                 updateGlobalState({ pointerDown: false });

@@ -10,13 +10,16 @@ export const Settings: React.FC = () => {
     return (
         <div className="settingsList">
             <div>
+                <b>Settings</b>
+            </div>
+            <div>
                 <label>
                     <input
                         type="checkbox"
                         checked={stylusMode ?? false}
                         onChange={(e) => updateGlobalState({ stylusMode: e.target.checked })}
                     />
-                    Режим стилуса
+                    Stylus mode
                 </label>
             </div>
             <div>
@@ -26,7 +29,7 @@ export const Settings: React.FC = () => {
                         checked={wallAlignmentMode ?? false}
                         onChange={(e) => updateGlobalState({ wallAlignmentMode: e.target.checked })}
                     />
-                    Ровные стены
+                    Walls alignment
                 </label>
             </div>
 
@@ -37,16 +40,11 @@ export const Settings: React.FC = () => {
                         checked={magneticMode ?? false}
                         onChange={(e) => updateGlobalState({ magneticMode: e.target.checked })}
                     />
-                    Привязка к стенам
+                    Magnet mode
                 </label>
             </div>
 
-            <a
-                href="https://perfect-freehand-example.vercel.app/"
-                target="_blank"
-                rel="noreferrer"
-                style={{ marginLeft: 25 }}
-            >
+            <a href="https://perfect-freehand-example.vercel.app/" target="_blank" rel="noreferrer">
                 Perfect freehand
             </a>
         </div>
