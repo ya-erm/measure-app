@@ -7,10 +7,7 @@ import { registerTool, ToolEvent } from './ToolEvent';
 
 export const DestroyTool: React.FC = () => {
     const { commandsHistory, interactiveRef, drawing, control, setValue } = useGlobalContext();
-    const { stylusMode, magneticMode, wallAlignmentMode, selectedTool } = useWatch({
-        control,
-        name: 'settings',
-    });
+    const { stylusMode, selectedTool } = useWatch({ control, name: 'settings' });
     const scale = useWatch({ control, name: 'scale' });
     const plan = useWatch({ control, name: 'plan' });
 
