@@ -80,3 +80,44 @@ export function findAllGuideLines(walls: Line[], points: Point[], point: Point):
     });
     return guidLines;
 }
+
+function inRange(x: number, x1: number, x2: number) {
+    return Math.min(x1, x2) <= x && x <= Math.max(x1, x2);
+}
+
+export function crossLines(l1: Line, l2: Line, onLine: boolean = false) {
+    const x1 = l1.p1.x;
+    const y1 = l1.p1.y;
+    const x2 = l1.p2.x;
+    const y2 = l1.p2.y;
+    const x3 = l2.p1.x;
+    const y3 = l2.p1.y;
+    const x4 = l2.p2.x;
+    const y4 = l2.p2.y;
+    let n: number;
+    if (y2 - y1 !== 0) {
+        const q = (x2 - x1) / (y1 - y2);
+        const sn = x3 - x4 + (y3 - y4) * q;
+        if (!sn) {
+            return null;
+        }
+        const fn = x3 - x1 + (y3 - y1) * q;
+        n = fn / sn;
+    } else {
+        if (!(y3 - y4)) {
+            return null;
+        }
+        n = (y3 - y1) / (y3 - y4);
+    }
+    const x = x3 + (x4 - x3) * n;
+    const y = y3 + (y4 - y3) * n;
+
+    if (onLine) {
+        if (inRange(x, x1, x2) && inRange(x, x3, x4) && inRange(y, y1, y2) && inRange(y, y3, y4)) {
+            return { x, y };
+        }
+        return null;
+    }
+
+    return { x, y };
+}

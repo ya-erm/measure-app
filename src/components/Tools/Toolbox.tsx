@@ -5,6 +5,7 @@ import { ReactComponent as CursorIcon } from '../../assets/icons/cursor.svg';
 import { ReactComponent as EraserIcon } from '../../assets/icons/eraser.svg';
 import { ReactComponent as PencilIcon } from '../../assets/icons/pencil.svg';
 import { ReactComponent as WallIcon } from '../../assets/icons/wall.svg';
+import { ReactComponent as DestroyIcon } from '../../assets/icons/bulldozer.svg';
 import { IToolType, useGlobalContext } from '../GlobalContext';
 import { RoundButton } from '../RoundButton/RoundButton';
 import './Toolbox.css';
@@ -39,6 +40,7 @@ export const Toolbox: React.FC<IToolboxProps> = () => {
     return (
         <div className="toolboxContainer">
             <ToolBoxItem type="wall" name="Wall" icon={<WallIcon />} />
+            <ToolBoxItem type="destroy" name="Destroy" icon={<DestroyIcon />} />
             <ToolBoxItem type="cursor" name="Cursor" icon={<CursorIcon />} />
             <ToolBoxItem type="pencil" name="Pencil" icon={<PencilIcon />} />
             <ToolBoxItem type="eraser" name="Eraser" icon={<EraserIcon />} />

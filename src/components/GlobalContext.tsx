@@ -4,7 +4,7 @@ import { IDrawing, IDrawPathOptions, useDrawing } from '../hooks/useDrawing';
 import { drawWall, wallGroupId } from './Draw';
 import { IHistory, useHistory } from './History/useHistory';
 
-export type IToolType = 'wall' | 'cursor' | 'move' | 'pencil' | 'eraser';
+export type IToolType = 'wall' | 'cursor' | 'move' | 'pencil' | 'eraser' | 'destroy';
 
 export type Point = {
     x: number;

@@ -58,10 +58,11 @@ export const PenTool: React.FC = () => {
         const onEnd = (e: ToolEvent) => {
             const strokeOptions = getStrokeOptions();
             if (!plan.notes) plan.notes = [];
-            plan.notes.push({ id, points, ...strokeOptions });
+            const path = { id, points, ...strokeOptions, groupId: 'pen' };
+            plan.notes.push(path);
             commandsHistory.add({
                 tool: selectedTool as 'pencil' | 'eraser',
-                data: { options: { id, points, ...strokeOptions, groupId: 'pen' } },
+                data: { options: path },
             });
             id = undefined;
             points = [];

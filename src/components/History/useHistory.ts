@@ -9,26 +9,40 @@ export type IHistory = {
     redo: () => void;
 };
 
+export type IWallHistoryRecord = {
+    tool: 'wall';
+    data: {
+        addedWall: Line;
+    };
+};
+
+export type ICursorHistoryRecord = {
+    tool: 'cursor';
+    data: {
+        before: Line[];
+        after: Line[];
+    };
+};
+
+export type IPencilHistoryRecord = {
+    tool: 'pencil' | 'eraser';
+    data: {
+        options: IDrawPathOptions;
+    };
+};
+
+export type IDestroyHistoryRecord = {
+    tool: 'destroy';
+    data: {
+        destroyedWalls: Line[];
+    };
+};
+
 export type IHistoryRecord =
-    | {
-          tool: 'wall';
-          data: {
-              addedWall: Line;
-          };
-      }
-    | {
-          tool: 'cursor';
-          data: {
-              before: Line[];
-              after: Line[];
-          };
-      }
-    | {
-          tool: 'pencil' | 'eraser';
-          data: {
-              options: IDrawPathOptions;
-          };
-      };
+    | IWallHistoryRecord
+    | ICursorHistoryRecord
+    | IPencilHistoryRecord
+    | IDestroyHistoryRecord;
 
 let undoHistory: IHistoryRecord[] = [];
 let redoHistory: IHistoryRecord[] = [];
@@ -69,6 +83,13 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                         const { options } = item.data;
                         if (options.id) drawing.removeElement(options.id);
                         break;
+                    case 'destroy':
+                        const { destroyedWalls } = item.data;
+                        destroyedWalls.forEach((w) => {
+                            plan.walls.push(w);
+                            drawWall(drawing, w);
+                        });
+                        break;
                 }
             },
 
@@ -98,6 +119,11 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                     case 'eraser':
                         const { options } = item.data;
                         drawing.drawPath(options);
+                        break;
+                    case 'destroy':
+                        const { destroyedWalls } = item.data;
+                        destroyedWalls.forEach((w) => drawing.removeElement(wallGroupId(w)));
+                        plan.walls = plan.walls.filter((w) => !destroyedWalls.includes(w));
                         break;
                 }
             },

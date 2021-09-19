@@ -54,7 +54,7 @@ export type IDrawing = {
     drawRect: (options: IDrawRectOptions) => string;
     drawPath: (options: IDrawPathOptions) => string;
     removeElement: (id: string, groupId?: string) => void;
-    removeElements: (predicate: (element: ChildNode) => boolean, groupId?: string) => void;
+    removeElements: (predicate: (element: Element) => boolean, groupId?: string) => void;
 };
 
 type UseDrawingReturn = {
@@ -174,7 +174,7 @@ export function useDrawing(scale: number = 1): UseDrawingReturn {
         removeElements: (predicate, groupId) => {
             const group = groupId ? svgRef.current?.getElementById(groupId) : svgRef.current;
             group?.childNodes?.forEach((child) => {
-                if (predicate(child)) {
+                if (predicate(child as Element)) {
                     child.remove();
                 }
             });
