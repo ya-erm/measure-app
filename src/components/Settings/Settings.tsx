@@ -1,12 +1,17 @@
-import React from 'react';
-import { useGlobalContext } from '../GlobalContext';
+import React, { useEffect } from 'react';
+import { useWatch } from 'react-hook-form';
+import { saveSettings, useGlobalContext } from '../GlobalContext';
 import './Settings.css';
 
 export const Settings: React.FC = () => {
-    const {
-        globalState: { stylusMode, magneticMode, wallAlignmentMode },
-        updateGlobalState,
-    } = useGlobalContext();
+    const { control, setValue } = useGlobalContext();
+    const settings = useWatch({ control, name: 'settings' });
+    const { stylusMode, magneticMode, wallAlignmentMode } = settings;
+
+    useEffect(() => {
+        saveSettings(settings);
+    }, [settings]);
+
     return (
         <div className="settingsList">
             <div>
@@ -17,7 +22,7 @@ export const Settings: React.FC = () => {
                     <input
                         type="checkbox"
                         checked={stylusMode ?? false}
-                        onChange={(e) => updateGlobalState({ stylusMode: e.target.checked })}
+                        onChange={(e) => setValue('settings.stylusMode', e.target.checked)}
                     />
                     Stylus mode
                 </label>
@@ -27,7 +32,7 @@ export const Settings: React.FC = () => {
                     <input
                         type="checkbox"
                         checked={wallAlignmentMode ?? false}
-                        onChange={(e) => updateGlobalState({ wallAlignmentMode: e.target.checked })}
+                        onChange={(e) => setValue('settings.wallAlignmentMode', e.target.checked)}
                     />
                     Walls alignment
                 </label>
@@ -38,7 +43,7 @@ export const Settings: React.FC = () => {
                     <input
                         type="checkbox"
                         checked={magneticMode ?? false}
-                        onChange={(e) => updateGlobalState({ magneticMode: e.target.checked })}
+                        onChange={(e) => setValue('settings.magneticMode', e.target.checked)}
                     />
                     Magnet mode
                 </label>

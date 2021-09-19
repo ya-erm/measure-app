@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useWatch } from 'react-hook-form';
 import { drawGuideLines, drawWall, removeGuideLines, wallCircleRadius } from '../Draw';
 import { distanceBetween, findAllGuideLines } from '../Geometry';
 import { Line, useGlobalContext } from '../GlobalContext';
@@ -18,9 +19,13 @@ function cloneEditingWalls(walls: Line[]): Line[] {
 }
 
 export const CursorTool: React.FC = () => {
-    const { commandsHistory, interactiveRef, drawing, globalState, updateGlobalState } =
-        useGlobalContext();
-    const { scale, stylusMode, magneticMode, selectedTool, plan } = globalState;
+    const { commandsHistory, interactiveRef, drawing, control, setValue } = useGlobalContext();
+    const { stylusMode, magneticMode, wallAlignmentMode, selectedTool } = useWatch({
+        control,
+        name: 'settings',
+    });
+    const scale = useWatch({ control, name: 'scale' });
+    const plan = useWatch({ control, name: 'plan' });
 
     useEffect(() => {
         if (!interactiveRef.current || selectedTool !== 'cursor') {
@@ -31,7 +36,7 @@ export const CursorTool: React.FC = () => {
 
         const onStart = (e: ToolEvent) => {
             if (stylusMode && e.type === 'touch') return;
-            updateGlobalState({ pointerDown: true });
+            setValue('pointerDown', true);
             e.changedTouches?.forEach((touch) => {
                 const id = touch.identifier;
                 const x = touch.pageX * scale;
@@ -105,14 +110,24 @@ export const CursorTool: React.FC = () => {
                     },
                 });
             });
-            if (e.touches?.length === 0) {
-                updateGlobalState({ pointerDown: false });
+            if (!e.touches || e.touches?.length === 0) {
+                setValue('pointerDown', false);
             }
         };
 
         return registerTool(interactiveRef.current, onStart, onMove, onEnd);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [interactiveRef.current, scale, stylusMode, magneticMode, selectedTool]);
+    }, [
+        scale,
+        stylusMode,
+        magneticMode,
+        wallAlignmentMode,
+        commandsHistory,
+        interactiveRef,
+        selectedTool,
+        plan.walls,
+        drawing,
+        setValue,
+    ]);
 
     return null;
 };

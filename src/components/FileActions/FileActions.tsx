@@ -1,33 +1,36 @@
 import React, { useCallback } from 'react';
+import { useWatch } from 'react-hook-form';
 import { downloadFile, saveSvg, uploadFile } from '../../utils/svg/save';
-import { drawWall } from '../Draw';
-import { useGlobalContext } from '../GlobalContext';
+import { drawPlan, IPlan, savePlan, useGlobalContext } from '../GlobalContext';
 import './FileActions.css';
 
 type IFileActionsProps = {};
 
 export const FileActions: React.FC<IFileActionsProps> = () => {
-    const { drawing, drawingRef, globalState } = useGlobalContext();
+    const { drawing, drawingRef, control, setValue } = useGlobalContext();
+    const plan = useWatch({ control, name: 'plan' });
+
     const exportSvg = useCallback(() => saveSvg(drawingRef.current!), [drawingRef]);
 
     const saveJson = useCallback(() => {
-        const json = JSON.stringify(globalState.plan);
+        const json = JSON.stringify(plan);
         downloadFile(json, `Plan ${new Date().toLocaleDateString()}.json`, 'text/plain');
-    }, [globalState.plan]);
+    }, [plan]);
 
     const loadJson = useCallback(() => {
         uploadFile((json) => {
             try {
                 if (!json) return;
-                const plan = JSON.parse(json);
-                console.log('Loaded plan', plan);
-                globalState.plan = plan;
-                globalState.plan.walls.forEach((w) => drawWall(drawing, w));
+                const parsedPlan = JSON.parse(json) as IPlan;
+                console.log('Loaded plan', parsedPlan);
+                setValue('plan', parsedPlan);
+                drawPlan(drawing, parsedPlan);
+                savePlan(parsedPlan);
             } catch {
                 console.log('Failed to load plan');
             }
         });
-    }, [drawing, globalState]);
+    }, [drawing, setValue]);
 
     return (
         <div className="fileActionsContainer">

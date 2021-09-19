@@ -1,14 +1,7 @@
-import React, {
-    Dispatch,
-    SetStateAction,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
-import { IDrawing, useDrawing } from '../hooks/useDrawing';
-import { drawWall } from './Draw';
+import React, { useEffect, useRef } from 'react';
+import { Control, useForm, UseFormGetValues, UseFormSetValue, useWatch } from 'react-hook-form';
+import { IDrawing, IDrawPathOptions, useDrawing } from '../hooks/useDrawing';
+import { drawWall, wallGroupId } from './Draw';
 import { IHistory, useHistory } from './History/useHistory';
 
 export type IToolType = 'wall' | 'cursor' | 'move' | 'pencil' | 'eraser';
@@ -28,41 +21,65 @@ export type Line = {
 
 export type IPlan = {
     walls: Line[];
+    notes: IDrawPathOptions[];
 };
 
-export type IGlobalState = {
-    scale: number;
-    selectedTool: IToolType;
-    pointerDown: boolean;
-
+export type ISettings = {
     stylusMode: boolean;
     magneticMode: boolean;
     wallAlignmentMode: boolean;
+    selectedTool: IToolType;
+};
 
+export type IGlobalState = {
+    settings: ISettings;
+    pointerDown: boolean;
+    scale: number;
     plan: IPlan;
 };
 
 export type IGlobalContext = {
-    globalState: IGlobalState;
-    setGlobalState: Dispatch<SetStateAction<IGlobalState>>;
-    updateGlobalState: (state: Partial<IGlobalState>) => void;
-
     drawing: IDrawing;
     drawingRef: React.RefObject<SVGSVGElement>;
     interactiveRef: React.RefObject<HTMLDivElement>;
 
+    control: Control<IGlobalState, object>;
+    getValues: UseFormGetValues<IGlobalState>;
+    setValue: UseFormSetValue<IGlobalState>;
+
     commandsHistory: IHistory;
 };
+
+export function saveSettings(settings: ISettings) {
+    localStorage.setItem('settings', JSON.stringify(settings));
+}
+
+export function loadSettings() {
+    const defaultSettings = {
+        stylusMode: true,
+        magneticMode: true,
+        wallAlignmentMode: true,
+        selectedTool: 'wall',
+    };
+    try {
+        const json = localStorage.getItem('settings');
+        if (!json) return defaultSettings;
+        return JSON.parse(json);
+    } catch {}
+    return defaultSettings;
+}
 
 export function savePlan(plan: IPlan) {
     localStorage.setItem('plan', JSON.stringify(plan));
 }
 
-export function loadPlan(json?: string | null): IPlan {
+export function loadPlan(): IPlan {
     const defaultPlan = {
         walls: [],
+        notes: [],
     };
     try {
+        const json = localStorage.getItem('plan');
         if (!json) return defaultPlan;
         const plan = JSON.parse(json);
         console.log('Restored plan', plan);
@@ -73,36 +90,39 @@ export function loadPlan(json?: string | null): IPlan {
     return defaultPlan;
 }
 
+export function drawPlan(drawing: IDrawing, plan: IPlan | undefined) {
+    plan?.walls?.forEach((w) => drawWall(drawing, w));
+    plan?.notes?.forEach((n) => drawing.drawPath(n));
+}
+
+export function clearPlan(drawing: IDrawing, plan: IPlan) {
+    plan.walls?.forEach((w) => drawing.removeElement(wallGroupId(w)));
+    plan.notes?.filter((n) => n.id).forEach((n) => drawing.removeElement(n.id!));
+    plan.walls = [];
+    plan.notes = [];
+}
+
+const defaultState: IGlobalState = {
+    settings: loadSettings(),
+    pointerDown: false,
+    scale: 2,
+    plan: loadPlan(),
+};
+
 export function useGlobalState(): IGlobalContext {
-    const defaultState: Partial<IGlobalState> = useMemo(
-        () => ({
-            scale: 2,
-            selectedTool: 'wall',
-            pointerDown: false,
+    const { control, getValues, setValue } = useForm<IGlobalState>({
+        defaultValues: defaultState,
+    });
 
-            stylusMode: true,
-            magneticMode: true,
-            wallAlignmentMode: true,
+    const scale = useWatch({ control, name: 'scale' });
+    const plan = useWatch({ control, name: 'plan' });
 
-            plan: loadPlan(localStorage.getItem('plan')),
-        }),
-        [],
-    );
-
-    const [globalState, setGlobalState] = useState<IGlobalState>(defaultState as any);
-
-    const updateGlobalState = useCallback(
-        (update) => setGlobalState((prev) => ({ ...prev, ...update })),
-        [],
-    );
-
-    const { svgRef: drawingRef, drawing } = useDrawing(globalState.scale);
-
-    const commandsHistory = useHistory(drawing, globalState.plan);
+    const { svgRef: drawingRef, drawing } = useDrawing(scale);
+    const commandsHistory = useHistory(drawing, plan);
 
     useEffect(() => {
-        defaultState.plan?.walls.forEach((w) => drawWall(drawing, w));
-    }, [drawing, defaultState]);
+        drawPlan(drawing, defaultState.plan);
+    }, [drawing]);
 
     const interactiveRef = useRef<HTMLDivElement>(null);
     const context: IGlobalContext = {
@@ -110,9 +130,9 @@ export function useGlobalState(): IGlobalContext {
         drawingRef,
         interactiveRef,
 
-        globalState,
-        setGlobalState,
-        updateGlobalState,
+        control,
+        getValues,
+        setValue,
 
         commandsHistory,
     };

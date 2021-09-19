@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useWatch } from 'react-hook-form';
 import { DrawPoint } from '../Draw';
 import { IToolType, useGlobalContext } from '../GlobalContext';
 import { registerTool, ToolEvent } from './ToolEvent';
@@ -6,9 +7,10 @@ import { registerTool, ToolEvent } from './ToolEvent';
 const tools: IToolType[] = ['pencil', 'eraser'];
 
 export const PenTool: React.FC = () => {
-    const { commandsHistory, drawing, interactiveRef, globalState, updateGlobalState } =
-        useGlobalContext();
-    const { scale, stylusMode, magneticMode, selectedTool } = globalState;
+    const { commandsHistory, interactiveRef, drawing, control, setValue } = useGlobalContext();
+    const { stylusMode, magneticMode, selectedTool } = useWatch({ control, name: 'settings' });
+    const scale = useWatch({ control, name: 'scale' });
+    const plan = useWatch({ control, name: 'plan' });
 
     useEffect(() => {
         if (!interactiveRef.current || !tools.includes(selectedTool)) {
@@ -28,7 +30,7 @@ export const PenTool: React.FC = () => {
         const onStart = (e: ToolEvent) => {
             if (stylusMode && e.type === 'touch') return;
             if (e.type === 'touch' && e.touches!.length > 1) return;
-            updateGlobalState({ pointerDown: true });
+            setValue('pointerDown', true);
             const touch = e.touches && e.touches[0];
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
@@ -55,6 +57,8 @@ export const PenTool: React.FC = () => {
 
         const onEnd = (e: ToolEvent) => {
             const strokeOptions = getStrokeOptions();
+            if (!plan.notes) plan.notes = [];
+            plan.notes.push({ id, points, ...strokeOptions });
             commandsHistory.add({
                 tool: selectedTool as 'pencil' | 'eraser',
                 data: { options: { id, points, ...strokeOptions, groupId: 'pen' } },
@@ -62,13 +66,22 @@ export const PenTool: React.FC = () => {
             id = undefined;
             points = [];
             if (!e.touches || e.touches.length === 0) {
-                updateGlobalState({ pointerDown: false });
+                setValue('pointerDown', false);
             }
         };
 
         return registerTool(interactiveRef.current, onStart, onMove, onEnd);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [interactiveRef.current, scale, stylusMode, magneticMode, selectedTool]);
+    }, [
+        scale,
+        stylusMode,
+        magneticMode,
+        interactiveRef,
+        commandsHistory,
+        selectedTool,
+        drawing,
+        plan,
+        setValue,
+    ]);
 
     return null;
 };

@@ -1,23 +1,22 @@
 import clsx from 'clsx';
 import React from 'react';
+import { useWatch } from 'react-hook-form';
 import { ReactComponent as CursorIcon } from '../../assets/icons/cursor.svg';
 import { ReactComponent as EraserIcon } from '../../assets/icons/eraser.svg';
 import { ReactComponent as PencilIcon } from '../../assets/icons/pencil.svg';
 import { ReactComponent as WallIcon } from '../../assets/icons/wall.svg';
 import { IToolType, useGlobalContext } from '../GlobalContext';
-import './Toolbox.css';
 import { RoundButton } from '../RoundButton/RoundButton';
+import './Toolbox.css';
 
 type IToolboxProps = {};
 
 export const Toolbox: React.FC<IToolboxProps> = () => {
-    const {
-        globalState: { selectedTool },
-        updateGlobalState,
-    } = useGlobalContext();
+    const { control, setValue } = useGlobalContext();
+    const selectedTool = useWatch({ control, name: 'settings.selectedTool' });
 
     const setSelectedTool = (tool: IToolType) => {
-        updateGlobalState({ selectedTool: tool });
+        setValue('settings.selectedTool', tool);
     };
 
     type IToolVoxItemProps = {

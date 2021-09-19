@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useWatch } from 'react-hook-form';
 import {
     drawGuideLines,
     drawWall,
@@ -12,9 +13,13 @@ import { Line, useGlobalContext } from '../GlobalContext';
 import { registerTool, ToolEvent } from './ToolEvent';
 
 export const WallTool: React.FC = () => {
-    const { commandsHistory, interactiveRef, drawing, globalState, updateGlobalState } =
-        useGlobalContext();
-    const { scale, stylusMode, magneticMode, wallAlignmentMode, selectedTool, plan } = globalState;
+    const { commandsHistory, interactiveRef, drawing, control, setValue } = useGlobalContext();
+    const { stylusMode, magneticMode, wallAlignmentMode, selectedTool } = useWatch({
+        control,
+        name: 'settings',
+    });
+    const scale = useWatch({ control, name: 'scale' });
+    const plan = useWatch({ control, name: 'plan' });
 
     useEffect(() => {
         if (!interactiveRef.current || selectedTool !== 'wall') {
@@ -37,7 +42,7 @@ export const WallTool: React.FC = () => {
                 cancel(e.id);
                 return;
             }
-            updateGlobalState({ pointerDown: true }); // TODO: это вызывает полный ререндер
+            setValue('pointerDown', true);
             const wallId =
                 plan.walls.length > 0
                     ? Math.max.apply(
@@ -90,8 +95,7 @@ export const WallTool: React.FC = () => {
         };
 
         const onEnd = (e: ToolEvent) => {
-            const { id, touches } = e;
-            const wall = plan.walls.find((x) => x.editId === id);
+            const wall = plan.walls.find((x) => x.editId === e.id);
             if (wall) {
                 if (magneticMode) {
                     const closePoint = plan.walls
@@ -112,14 +116,24 @@ export const WallTool: React.FC = () => {
                     data: { addedWall: wall },
                 });
             }
-            if (touches?.length === 0) {
-                updateGlobalState({ pointerDown: false }); // TODO: это вызывает полный ререндер
+            if (!e.touches || e.touches?.length === 0) {
+                setValue('pointerDown', false);
             }
         };
 
         return registerTool(interactiveRef.current, onStart, onMove, onEnd);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [interactiveRef.current, stylusMode, magneticMode, wallAlignmentMode, selectedTool]);
+    }, [
+        scale,
+        stylusMode,
+        magneticMode,
+        wallAlignmentMode,
+        commandsHistory,
+        interactiveRef,
+        selectedTool,
+        plan.walls,
+        drawing,
+        setValue,
+    ]);
 
     return null;
 };
