@@ -28,7 +28,7 @@ export const PenTool: React.FC = () => {
         };
 
         const onStart = (e: ToolEvent) => {
-            if (stylusMode && e.type === 'touch') return;
+            if (stylusMode && e.type !== 'stylus') return;
             if (e.type === 'touch' && e.touches!.length > 1) return;
             setValue('pointerDown', true);
             const touch = e.touches && e.touches[0];
@@ -45,7 +45,7 @@ export const PenTool: React.FC = () => {
         };
 
         const onMove = (e: ToolEvent) => {
-            if (stylusMode && e.type === 'touch') return;
+            if (stylusMode && e.type !== 'stylus') return;
             if (e.type === 'mouse' && !e.buttons) return;
             const touch = e.touches && e.touches[0];
             const x = (touch?.pageX ?? e.x) * scale;
@@ -56,6 +56,7 @@ export const PenTool: React.FC = () => {
         };
 
         const onEnd = (e: ToolEvent) => {
+            if (stylusMode && e.type !== 'stylus') return;
             const strokeOptions = getStrokeOptions();
             const path = { id, points, ...strokeOptions, groupId: 'pen' };
             plan.notes.push(path);

@@ -35,7 +35,7 @@ export const CursorTool: React.FC = () => {
         let _wallBefore: Line[] = [];
 
         const onStart = (e: ToolEvent) => {
-            if (stylusMode && e.type === 'touch') return;
+            if (stylusMode && e.type !== 'stylus') return;
             setValue('pointerDown', true);
             e.changedTouches?.forEach((touch) => {
                 const id = touch.identifier;
@@ -76,6 +76,7 @@ export const CursorTool: React.FC = () => {
         };
 
         const onEnd = (e: ToolEvent) => {
+            if (stylusMode && e.type !== 'stylus') return;
             e.changedTouches?.forEach((touch) => {
                 const id = touch.identifier;
                 plan.walls

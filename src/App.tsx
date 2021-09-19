@@ -7,6 +7,7 @@ import PreventTouch from './components/PreventTouch';
 import { Settings } from './components/Settings/Settings';
 import { CursorTool } from './components/Tools/CursorTool';
 import { DestroyTool } from './components/Tools/DestroyTool';
+import { HistoryTool } from './components/Tools/HistoryTool';
 import { PenTool } from './components/Tools/PenTool';
 import { Toolbox } from './components/Tools/Toolbox';
 import { WallTool } from './components/Tools/WallTool';
@@ -20,6 +21,7 @@ function App() {
         <GlobalContext.Provider value={globalContext}>
             <main>
                 <PreventTouch />
+                <HistoryTool />
                 <WallTool />
                 <CursorTool />
                 <PenTool />

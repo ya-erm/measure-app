@@ -38,7 +38,7 @@ export const WallTool: React.FC = () => {
         const onStart = (e: ToolEvent) => {
             const x = e.x * scale;
             const y = e.y * scale;
-            if (stylusMode && e.type === 'touch') return;
+            if (stylusMode && e.type !== 'stylus') return;
             if (e.type === 'touch' && e.touches!.length > 1) {
                 setValue('pointerDown', false);
                 cancel(e.touches![0].identifier);
