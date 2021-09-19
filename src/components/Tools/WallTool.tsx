@@ -31,6 +31,7 @@ export const WallTool: React.FC = () => {
             if (wallIndex >= 0) {
                 const walls = plan.walls.splice(wallIndex, 1);
                 drawing.removeElement(wallGroupId(walls[0]));
+                walls[0].editId = undefined;
             }
         };
 
@@ -39,7 +40,8 @@ export const WallTool: React.FC = () => {
             const y = e.y * scale;
             if (stylusMode && e.type === 'touch') return;
             if (e.type === 'touch' && e.touches!.length > 1) {
-                cancel(e.id);
+                setValue('pointerDown', false);
+                cancel(e.touches![0].identifier);
                 return;
             }
             setValue('pointerDown', true);

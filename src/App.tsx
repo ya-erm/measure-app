@@ -14,6 +14,7 @@ import { WallTool } from './components/Tools/WallTool';
 function App() {
     const globalContext = useGlobalState();
     const { interactiveRef, drawingRef } = globalContext;
+    console.log('App render');
 
     return (
         <GlobalContext.Provider value={globalContext}>
@@ -41,9 +42,9 @@ function App() {
                         <li>pen color, width</li>
                         <li>wall length text</li>
                         <li>door, window</li>
-                        <li>app icon</li>
                         <li>translate app</li>
                         <li>custom zoom</li>
+                        <li>hotkeys for toolbox</li>
                     </ol>
                 </div>
                 <HistoryPanel />

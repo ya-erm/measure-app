@@ -64,8 +64,6 @@ type UseDrawingReturn = {
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-let IID = 0; // TODO: при загрузке плана  возникнет коллизии
-
 function setLineOptions(line: Element, options: IDrawLineOptions) {
     const { x1, x2, y1, y2, strokeWidth, stroke = '#000', strokeDashArray } = options;
     line.setAttribute('x1', x1.toString());
@@ -106,7 +104,7 @@ function findOrCreate(
     groupId?: string,
 ) {
     let element = key ? svg?.getElementById(key) : undefined;
-    const id = key ?? `e${IID++}`;
+    const id = key ?? `e${new Date().getTime()}`;
     if (!element) {
         element = document.createElementNS(SVG_NS, type);
         element.setAttribute('id', id);

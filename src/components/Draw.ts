@@ -56,8 +56,8 @@ export function drawCircle(
     ctx.drawCircle({ id, groupId, x: xc, y: yc, rx: radius, ry: radius, fill, stroke });
 }
 
-export const wallPointSize = 10;
-export const wallCircleRadius = 15;
+export const wallPointSize = 15;
+export const wallCircleRadius = 20;
 
 export const wallGroupId = (wall: Line) => `w${wall.id}`;
 export const pointGroupId = (point: Point) => `p${point.editId}`;

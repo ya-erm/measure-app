@@ -69,6 +69,9 @@ export const DestroyTool: React.FC = () => {
                 data: { destroyedWalls },
             });
             drawing.removeElement('cross');
+            if (!e.touches || e.touches?.length === 0) {
+                setValue('pointerDown', false);
+            }
         };
 
         return registerTool(interactiveRef.current, onStart, onMove, onEnd);

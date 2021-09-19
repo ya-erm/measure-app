@@ -2,7 +2,7 @@ import { useWatch } from 'react-hook-form';
 import { ReactComponent as TrashIcon } from '../../assets/icons/delete.svg';
 import { ReactComponent as RedoIcon } from '../../assets/icons/redo.svg';
 import { ReactComponent as UndoIcon } from '../../assets/icons/undo.svg';
-import { clearPlan, savePlan, useGlobalContext } from '../GlobalContext';
+import { erasePlan, savePlan, useGlobalContext } from '../GlobalContext';
 import { RoundButton } from '../RoundButton/RoundButton';
 import './HistoryPanel.css';
 
@@ -13,7 +13,10 @@ export const HistoryPanel: React.FC = () => {
     const clear = () => {
         // eslint-disable-next-line no-restricted-globals
         if (confirm('Are you sure want to delete all?')) {
-            clearPlan(drawing, plan);
+            commandsHistory.clear();
+            erasePlan(drawing, plan);
+            plan.walls = [];
+            plan.notes = [];
             savePlan(plan);
         }
     };

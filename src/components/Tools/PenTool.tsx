@@ -34,7 +34,7 @@ export const PenTool: React.FC = () => {
             const touch = e.touches && e.touches[0];
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
-            points.push({ x, y, pressure: touch?.force ?? 0.5 });
+            points.push({ x, y, pressure: touch?.force });
             const { stroke, strokeWidth } = getStrokeOptions();
             id = drawing.drawPath({
                 points,
@@ -50,14 +50,13 @@ export const PenTool: React.FC = () => {
             const touch = e.touches && e.touches[0];
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
-            points!.push({ x, y, pressure: touch?.force ?? 0.5 });
+            points!.push({ x, y, pressure: touch?.force });
             const { strokeWidth } = getStrokeOptions();
             drawing.drawPath({ id, points, strokeWidth });
         };
 
         const onEnd = (e: ToolEvent) => {
             const strokeOptions = getStrokeOptions();
-            if (!plan.notes) plan.notes = [];
             const path = { id, points, ...strokeOptions, groupId: 'pen' };
             plan.notes.push(path);
             commandsHistory.add({
@@ -66,7 +65,7 @@ export const PenTool: React.FC = () => {
             });
             id = undefined;
             points = [];
-            if (!e.touches || e.touches.length === 0) {
+            if (!e.touches || e.touches?.length === 0) {
                 setValue('pointerDown', false);
             }
         };

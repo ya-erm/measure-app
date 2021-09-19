@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Control, useForm, UseFormGetValues, UseFormSetValue, useWatch } from 'react-hook-form';
+import { Control, useForm, UseFormGetValues, UseFormSetValue } from 'react-hook-form';
 import { IDrawing, IDrawPathOptions, useDrawing } from '../hooks/useDrawing';
 import { drawWall, wallGroupId } from './Draw';
 import { IHistory, useHistory } from './History/useHistory';
@@ -70,6 +70,7 @@ export function loadSettings() {
 }
 
 export function savePlan(plan: IPlan) {
+    // console.log('Store plan', plan);
     localStorage.setItem('plan', JSON.stringify(plan));
 }
 
@@ -82,7 +83,7 @@ export function loadPlan(): IPlan {
         const json = localStorage.getItem('plan');
         if (!json) return defaultPlan;
         const plan = JSON.parse(json);
-        console.log('Restored plan', plan);
+        console.log('Restore plan', plan);
         return plan;
     } catch {
         console.log('Failed to restore plan');
@@ -95,11 +96,9 @@ export function drawPlan(drawing: IDrawing, plan: IPlan | undefined) {
     plan?.notes?.forEach((n) => drawing.drawPath(n));
 }
 
-export function clearPlan(drawing: IDrawing, plan: IPlan) {
+export function erasePlan(drawing: IDrawing, plan: IPlan) {
     plan.walls?.forEach((w) => drawing.removeElement(wallGroupId(w)));
     plan.notes?.filter((n) => n.id).forEach((n) => drawing.removeElement(n.id!));
-    plan.walls = [];
-    plan.notes = [];
 }
 
 const defaultState: IGlobalState = {
@@ -113,9 +112,9 @@ export function useGlobalState(): IGlobalContext {
     const { control, getValues, setValue } = useForm<IGlobalState>({
         defaultValues: defaultState,
     });
-
-    const scale = useWatch({ control, name: 'scale' });
-    const plan = useWatch({ control, name: 'plan' });
+    const scale = defaultState.scale;
+    const plan = defaultState.plan;
+    console.log('useGlobalState', plan);
 
     const { svgRef: drawingRef, drawing } = useDrawing(scale);
     const commandsHistory = useHistory(drawing, plan);

@@ -7,6 +7,7 @@ export type IHistory = {
     add: (record: IHistoryRecord) => void;
     undo: () => void;
     redo: () => void;
+    clear: () => void;
 };
 
 export type IWallHistoryRecord = {
@@ -81,7 +82,10 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                     case 'pencil':
                     case 'eraser':
                         const { options } = item.data;
-                        if (options.id) drawing.removeElement(options.id);
+                        if (options.id) {
+                            plan.notes = plan.notes.filter((n) => n.id !== options.id);
+                            drawing.removeElement(options.id);
+                        }
                         break;
                     case 'destroy':
                         const { destroyedWalls } = item.data;
@@ -91,6 +95,7 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                         });
                         break;
                 }
+                savePlan(plan);
             },
 
             redo: () => {
@@ -118,6 +123,7 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                     case 'pencil':
                     case 'eraser':
                         const { options } = item.data;
+                        plan.notes.push(options);
                         drawing.drawPath(options);
                         break;
                     case 'destroy':
@@ -126,6 +132,12 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                         plan.walls = plan.walls.filter((w) => !destroyedWalls.includes(w));
                         break;
                 }
+                savePlan(plan);
+            },
+
+            clear: () => {
+                undoHistory = [];
+                redoHistory = [];
             },
         }),
         [plan, drawing],

@@ -1,13 +1,13 @@
 import React, { useCallback } from 'react';
 import { useWatch } from 'react-hook-form';
 import { downloadFile, saveSvg, uploadFile } from '../../utils/svg/save';
-import { drawPlan, IPlan, savePlan, useGlobalContext } from '../GlobalContext';
+import { erasePlan, drawPlan, IPlan, savePlan, useGlobalContext } from '../GlobalContext';
 import './FileActions.css';
 
 type IFileActionsProps = {};
 
 export const FileActions: React.FC<IFileActionsProps> = () => {
-    const { drawing, drawingRef, control, setValue } = useGlobalContext();
+    const { drawing, drawingRef, control } = useGlobalContext();
     const plan = useWatch({ control, name: 'plan' });
 
     const exportSvg = useCallback(() => saveSvg(drawingRef.current!), [drawingRef]);
@@ -21,16 +21,18 @@ export const FileActions: React.FC<IFileActionsProps> = () => {
         uploadFile((json) => {
             try {
                 if (!json) return;
+                erasePlan(drawing, plan);
                 const parsedPlan = JSON.parse(json) as IPlan;
-                console.log('Loaded plan', parsedPlan);
-                setValue('plan', parsedPlan);
+                console.log('Load JSON', parsedPlan);
+                plan.walls = parsedPlan.walls ?? [];
+                plan.notes = parsedPlan.notes ?? [];
                 drawPlan(drawing, parsedPlan);
                 savePlan(parsedPlan);
             } catch {
                 console.log('Failed to load plan');
             }
         });
-    }, [drawing, setValue]);
+    }, [plan, drawing]);
 
     return (
         <div className="fileActionsContainer">
