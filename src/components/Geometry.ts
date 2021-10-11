@@ -11,6 +11,26 @@ export function getWallOrientation({ p1, p2 }: { p1: Point; p2: Point }): WallOr
     return 'vertical';
 }
 
+export function getAngle(p1: Point, p2: Point) {
+    const x1 = p1.x;
+    const y1 = p1.y;
+    const x2 = p2.x;
+    const y2 = p2.y;
+    let degrees;
+    if (x2 - x1 === 0) {
+        degrees = y2 > y1 ? 90 : 270;
+    } else {
+        const riseOverRun = (y2 - y1) / (x2 - x1);
+        const radians = Math.atan(riseOverRun);
+        degrees = radians * (180 / Math.PI);
+
+        if (x2 - x1 < 0 || y2 - y1 < 0) degrees += 180;
+        if (x2 - x1 > 0 && y2 - y1 < 0) degrees -= 180;
+        if (degrees < 0) degrees += 360;
+    }
+    return degrees;
+}
+
 export function distanceBetween(p1: Point, p2: Point): number {
     return Math.sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
 }
@@ -114,6 +134,40 @@ export function crossLines(l1: Line, l2: Line, onLine: boolean = false) {
 
     if (onLine) {
         if (inRange(x, x1, x2) && inRange(x, x3, x4) && inRange(y, y1, y2) && inRange(y, y3, y4)) {
+            return { x, y };
+        }
+        return null;
+    }
+
+    return { x, y };
+}
+
+export function pointProjection(p: Point, l: Line, onLine: boolean = false) {
+    const x1 = l.p1.x;
+    const y1 = l.p1.y;
+    const x2 = l.p2.x;
+    const y2 = l.p2.y;
+    const x3 = p.x;
+    const y3 = p.y;
+
+    const x =
+        (x1 * x1 * x3 -
+            2 * x1 * x2 * x3 +
+            x2 * x2 * x3 +
+            x2 * (y1 - y2) * (y1 - y3) -
+            x1 * (y1 - y2) * (y2 - y3)) /
+        ((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+
+    const y =
+        (x2 * x2 * y1 +
+            x1 * x1 * y2 +
+            x2 * x3 * (y2 - y1) -
+            x1 * (x3 * (y2 - y1) + x2 * (y1 + y2)) +
+            (y1 - y2) * (y1 - y2) * y3) /
+        ((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+
+    if (onLine) {
+        if (inRange(x, x1, x2) && inRange(y, y1, y2)) {
             return { x, y };
         }
         return null;

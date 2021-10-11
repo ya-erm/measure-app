@@ -47,12 +47,22 @@ export type IDrawPathOptions = {
 } & IDrawShapeOptions &
     IDrawIdOptions;
 
+export type IDrawTextOptions = {
+    x: number;
+    y: number;
+    angle?: number;
+    fontSize?: number;
+    text: string;
+} & IDrawShapeOptions &
+    IDrawIdOptions;
+
 export type IDrawing = {
     createGroup: (id?: string, groupId?: string) => string;
     drawLine: (options: IDrawLineOptions) => string;
     drawCircle: (options: IDrawCircleOptions) => string;
     drawRect: (options: IDrawRectOptions) => string;
     drawPath: (options: IDrawPathOptions) => string;
+    drawText: (options: IDrawTextOptions) => string;
     removeElement: (id: string, groupId?: string) => void;
     removeElements: (predicate: (element: Element) => boolean, groupId?: string) => void;
 };
@@ -75,15 +85,15 @@ function setLineOptions(line: Element, options: IDrawLineOptions) {
     if (strokeDashArray) line.setAttribute('stroke-dasharray', strokeDashArray);
 }
 
-function setRectOptions(ellipse: Element, options: IDrawRectOptions) {
+function setRectOptions(rect: Element, options: IDrawRectOptions) {
     const { x, y, width, height, strokeWidth, stroke, fill } = options;
-    ellipse.setAttribute('x', x.toString());
-    ellipse.setAttribute('y', y.toString());
-    ellipse.setAttribute('width', width.toString());
-    ellipse.setAttribute('height', height.toString());
-    if (fill) ellipse.setAttribute('fill', fill);
-    if (stroke) ellipse.setAttribute('stroke', stroke);
-    if (strokeWidth) ellipse.setAttribute('stroke-width', strokeWidth.toString());
+    rect.setAttribute('x', x.toString());
+    rect.setAttribute('y', y.toString());
+    rect.setAttribute('width', width.toString());
+    rect.setAttribute('height', height.toString());
+    if (fill) rect.setAttribute('fill', fill);
+    if (stroke) rect.setAttribute('stroke', stroke);
+    if (strokeWidth) rect.setAttribute('stroke-width', strokeWidth.toString());
 }
 
 function setCircleOptions(ellipse: Element, options: IDrawCircleOptions) {
@@ -95,6 +105,18 @@ function setCircleOptions(ellipse: Element, options: IDrawCircleOptions) {
     if (fill) ellipse.setAttribute('fill', fill);
     if (stroke) ellipse.setAttribute('stroke', stroke);
     if (strokeWidth) ellipse.setAttribute('stroke-width', strokeWidth.toString());
+}
+
+function setTextOptions(element: Element, options: IDrawTextOptions) {
+    const { x, y, angle = 0, fontSize = 25, text, stroke, strokeWidth, fill } = options;
+    element.setAttribute('x', (x - 10).toString());
+    element.setAttribute('y', (y - 10).toString());
+    element.setAttribute('style', `text-anchor: middle;font-size: ${fontSize}`);
+    element.setAttribute('transform', `rotate(${angle}, ${x}, ${y})`);
+    element.textContent = text;
+    if (fill) element.setAttribute('fill', fill);
+    if (stroke) element.setAttribute('stroke', stroke);
+    if (strokeWidth) element.setAttribute('stroke-width', strokeWidth.toString());
 }
 
 function findOrCreate(
@@ -158,6 +180,16 @@ export function useDrawing(scale: number = 1): UseDrawingReturn {
                 options.groupId,
             );
             setRectOptions(element, options);
+            return id;
+        },
+        drawText: (options) => {
+            const { element, id } = findOrCreate(
+                svgRef.current,
+                options.id,
+                'text',
+                options.groupId,
+            );
+            setTextOptions(element, options);
             return id;
         },
         createGroup: (key, parentId) => {

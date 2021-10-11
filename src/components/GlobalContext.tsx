@@ -19,8 +19,12 @@ export type Line = {
     editId?: number;
 };
 
+export type Wall = Line & {
+    length?: string;
+};
+
 export type IPlan = {
-    walls: Line[];
+    walls: Wall[];
     notes: IDrawPathOptions[];
 };
 
@@ -34,6 +38,7 @@ export type ISettings = {
 export type IGlobalState = {
     settings: ISettings;
     pointerDown: boolean;
+    selectedWall?: Wall;
     scale: number;
     plan: IPlan;
 };

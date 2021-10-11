@@ -1,0 +1,50 @@
+.mini-keyboard {
+    position: absolute;
+}
+
+.keyboard {
+    border-collapse: collapse;
+}
+
+.keyboard td {
+    border: 1px solid #b4b8bb;
+    box-sizing: border-box;
+    height: 35px;
+    padding: 0;
+}
+
+.keyboard td:not([colSpan]) {
+    width: 35px;
+}
+
+.keyboard-input {
+    width: 100%;
+    height: 100%;
+    font-size: 1rem;
+    box-sizing: border-box;
+    text-align: center;
+    border: none;
+    outline: none;
+}
+
+.keyboard-button {
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    font-size: 1rem;
+    background-color: #f5f8fa;
+    background-image: linear-gradient(180deg, hsla(0, 0%, 100%, 0.8), hsla(0, 0%, 100%, 0));
+    border: none;
+}
+
+.keyboard-button:hover {
+    background-color: #ebf1f5;
+}
+
+.keyboard-button:active {
+    background-color: #d8e1e8;
+}
+
+.keyboard-submit button {
+    font-size: 0.8rem;
+}

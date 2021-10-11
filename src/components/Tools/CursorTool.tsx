@@ -1,16 +1,17 @@
 import React, { useEffect } from 'react';
 import { useWatch } from 'react-hook-form';
 import { drawGuideLines, drawWall, removeGuideLines, wallCircleRadius } from '../Draw';
-import { distanceBetween, findAllGuideLines } from '../Geometry';
-import { Line, useGlobalContext } from '../GlobalContext';
+import { distanceBetween, findAllGuideLines, pointProjection } from '../Geometry';
+import { useGlobalContext, Wall } from '../GlobalContext';
 import { registerTool, ToolEvent } from './ToolEvent';
 
-function cloneEditingWalls(walls: Line[]): Line[] {
+function cloneEditingWalls(walls: Wall[]): Wall[] {
     return walls
         .filter((w) => w.p1.editId || w.p2.editId)
         .map((w) => {
-            const clone: Line = {
+            const clone: Wall = {
                 id: w.id,
+                length: w.length,
                 p1: { x: w.p1.x, y: w.p1.y },
                 p2: { x: w.p2.x, y: w.p2.y },
             };
@@ -32,7 +33,8 @@ export const CursorTool: React.FC = () => {
             return;
         }
 
-        let _wallBefore: Line[] = [];
+        let _wallBefore: Wall[] = [];
+        let selectedWall: Wall | undefined;
 
         const onStart = (e: ToolEvent) => {
             if (stylusMode && e.type !== 'stylus') return;
@@ -41,12 +43,26 @@ export const CursorTool: React.FC = () => {
                 const id = touch.identifier;
                 const x = touch.pageX * scale;
                 const y = touch.pageY * scale;
-                plan.walls
+                const points = plan.walls
                     .flatMap((item) => [item.p1, item.p2])
                     .filter((p) => distanceBetween(p, { x, y }) <= wallCircleRadius)
-                    .forEach((p) => {
+                    .map((p) => {
                         p.editId = id;
+                        return p;
                     });
+
+                const newSelectedWall =
+                    points.length === 0
+                        ? plan.walls.find((w) => {
+                              const p = pointProjection({ x, y }, w, true);
+                              return p && distanceBetween({ x, y }, p) < wallCircleRadius;
+                          })
+                        : undefined;
+
+                if (selectedWall) drawWall(drawing, selectedWall);
+                selectedWall = newSelectedWall;
+                if (selectedWall) drawWall(drawing, selectedWall, '#00f');
+                setValue('selectedWall', selectedWall);
 
                 _wallBefore = cloneEditingWalls(plan.walls);
             });
@@ -94,14 +110,6 @@ export const CursorTool: React.FC = () => {
                             }
                         }
                     });
-                plan.walls
-                    .filter((w) => w.p1.editId || w.p2.editId)
-                    .forEach((w) => {
-                        w.p1.editId = undefined;
-                        w.p2.editId = undefined;
-                        drawWall(drawing, w);
-                    });
-                removeGuideLines(drawing, { editId: id, x: 0, y: 0 });
 
                 commandsHistory.add({
                     tool: 'cursor',
@@ -110,6 +118,15 @@ export const CursorTool: React.FC = () => {
                         after: cloneEditingWalls(plan.walls),
                     },
                 });
+
+                plan.walls
+                    .filter((w) => w.p1.editId || w.p2.editId)
+                    .forEach((w) => {
+                        w.p1.editId = undefined;
+                        w.p2.editId = undefined;
+                        drawWall(drawing, w);
+                    });
+                removeGuideLines(drawing, { editId: id, x: 0, y: 0 });
             });
             if (!e.touches || e.touches?.length === 0) {
                 setValue('pointerDown', false);

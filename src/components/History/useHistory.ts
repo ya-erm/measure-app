@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { IDrawing, IDrawPathOptions } from '../../hooks/useDrawing';
 import { drawWall, wallGroupId } from '../Draw';
-import { IPlan, Line, savePlan } from '../GlobalContext';
+import { IPlan, savePlan, Wall } from '../GlobalContext';
 
 export type IHistory = {
     add: (record: IHistoryRecord) => void;
@@ -13,15 +13,15 @@ export type IHistory = {
 export type IWallHistoryRecord = {
     tool: 'wall';
     data: {
-        addedWall: Line;
+        addedWall: Wall;
     };
 };
 
 export type ICursorHistoryRecord = {
     tool: 'cursor';
     data: {
-        before: Line[];
-        after: Line[];
+        before: Wall[];
+        after: Wall[];
     };
 };
 
@@ -35,7 +35,16 @@ export type IPencilHistoryRecord = {
 export type IDestroyHistoryRecord = {
     tool: 'destroy';
     data: {
-        destroyedWalls: Line[];
+        destroyedWalls: Wall[];
+    };
+};
+
+export type ITextHistoryRecord = {
+    tool: 'text';
+    data: {
+        id: string;
+        before?: string;
+        after?: string;
     };
 };
 
@@ -43,7 +52,8 @@ export type IHistoryRecord =
     | IWallHistoryRecord
     | ICursorHistoryRecord
     | IPencilHistoryRecord
-    | IDestroyHistoryRecord;
+    | IDestroyHistoryRecord
+    | ITextHistoryRecord;
 
 let undoHistory: IHistoryRecord[] = [];
 let redoHistory: IHistoryRecord[] = [];
@@ -94,6 +104,16 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                             drawWall(drawing, w);
                         });
                         break;
+                    case 'text': {
+                        const { id, before } = item.data;
+                        plan.walls
+                            .filter((w) => w.id === id)
+                            .forEach((w) => {
+                                w.length = before;
+                                drawWall(drawing, w);
+                            });
+                        break;
+                    }
                 }
                 savePlan(plan);
             },
@@ -116,8 +136,8 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                                 .forEach((w) => {
                                     w.p1 = wall.p1;
                                     w.p2 = wall.p2;
+                                    drawWall(drawing, w);
                                 });
-                            drawWall(drawing, wall);
                         });
                         break;
                     case 'pencil':
@@ -131,6 +151,16 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                         destroyedWalls.forEach((w) => drawing.removeElement(wallGroupId(w)));
                         plan.walls = plan.walls.filter((w) => !destroyedWalls.includes(w));
                         break;
+                    case 'text': {
+                        const { id, after } = item.data;
+                        plan.walls
+                            .filter((w) => w.id === id)
+                            .forEach((w) => {
+                                w.length = after;
+                                drawWall(drawing, w);
+                            });
+                        break;
+                    }
                 }
                 savePlan(plan);
             },

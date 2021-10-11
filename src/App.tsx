@@ -3,6 +3,7 @@ import './App.css';
 import { FileActions } from './components/FileActions/FileActions';
 import { GlobalContext, useGlobalState } from './components/GlobalContext';
 import { HistoryPanel } from './components/History/HistoryPanel';
+import { MiniKeyboard } from './components/Keyboard/Keyboard';
 import PreventTouch from './components/PreventTouch';
 import { Settings } from './components/Settings/Settings';
 import { CursorTool } from './components/Tools/CursorTool';
@@ -19,7 +20,7 @@ function App() {
 
     return (
         <GlobalContext.Provider value={globalContext}>
-            <main>
+            <main className="unselectable">
                 <PreventTouch />
                 <HistoryTool />
                 <WallTool />
@@ -42,13 +43,13 @@ function App() {
                         <li>hotkeys to undo</li>
                         <li>handle resize</li>
                         <li>pen color, width</li>
-                        <li>wall length text</li>
                         <li>door, window</li>
                         <li>translate app</li>
                         <li>custom zoom</li>
                         <li>hotkeys for toolbox</li>
                     </ol>
                 </div>
+                <MiniKeyboard />
                 <HistoryPanel />
             </main>
         </GlobalContext.Provider>
