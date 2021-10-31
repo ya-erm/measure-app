@@ -11,7 +11,8 @@ function cloneEditingWalls(walls: Wall[]): Wall[] {
         .map((w) => {
             const clone: Wall = {
                 id: w.id,
-                length: w.length,
+                topText: w.topText,
+                bottomText: w.bottomText,
                 p1: { x: w.p1.x, y: w.p1.y },
                 p2: { x: w.p2.x, y: w.p2.y },
             };

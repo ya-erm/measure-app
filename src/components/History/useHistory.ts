@@ -43,8 +43,14 @@ export type ITextHistoryRecord = {
     tool: 'text';
     data: {
         id: string;
-        before?: string;
-        after?: string;
+        before?: {
+            topText?: string;
+            bottomText?: string;
+        };
+        after?: {
+            topText?: string;
+            bottomText?: string;
+        };
     };
 };
 
@@ -109,7 +115,8 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                         plan.walls
                             .filter((w) => w.id === id)
                             .forEach((w) => {
-                                w.length = before;
+                                w.topText = before?.topText;
+                                w.bottomText = before?.bottomText;
                                 drawWall(drawing, w);
                             });
                         break;
@@ -156,7 +163,8 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                         plan.walls
                             .filter((w) => w.id === id)
                             .forEach((w) => {
-                                w.length = after;
+                                w.topText = after?.topText;
+                                w.bottomText = after?.bottomText;
                                 drawWall(drawing, w);
                             });
                         break;

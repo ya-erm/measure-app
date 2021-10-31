@@ -40,10 +40,10 @@ function App() {
                     <FileActions />
                     <ol style={{ paddingInlineStart: 15, margin: 0 }}>
                         <b>What need to do</b>
-                        <li>hotkeys to undo</li>
                         <li>handle resize</li>
                         <li>pen color, width</li>
                         <li>door, window</li>
+                        <li>keyboard outside</li>
                         <li>translate app</li>
                         <li>custom zoom</li>
                         <li>hotkeys for toolbox</li>

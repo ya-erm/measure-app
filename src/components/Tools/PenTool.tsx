@@ -34,7 +34,7 @@ export const PenTool: React.FC = () => {
             const touch = e.touches && e.touches[0];
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
-            points.push({ x, y, pressure: touch?.force });
+            points.push({ x, y, pressure: Number(touch?.force.toFixed(3)) });
             const { stroke, strokeWidth } = getStrokeOptions();
             id = drawing.drawPath({
                 points,
@@ -50,7 +50,7 @@ export const PenTool: React.FC = () => {
             const touch = e.touches && e.touches[0];
             const x = (touch?.pageX ?? e.x) * scale;
             const y = (touch?.pageY ?? e.y) * scale;
-            points!.push({ x, y, pressure: touch?.force });
+            points!.push({ x, y, pressure: Number(touch?.force.toFixed(3)) });
             const { strokeWidth } = getStrokeOptions();
             drawing.drawPath({ id, points, strokeWidth });
         };

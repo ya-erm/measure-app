@@ -20,7 +20,8 @@ export type Line = {
 };
 
 export type Wall = Line & {
-    length?: string;
+    topText?: string;
+    bottomText?: string;
 };
 
 export type IPlan = {

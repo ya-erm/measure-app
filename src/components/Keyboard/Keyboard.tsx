@@ -1,27 +1,59 @@
-import React, { useState } from 'react';
+import clsx from 'clsx';
+import React, { useEffect, useState } from 'react';
 import { useWatch } from 'react-hook-form';
+import { ReactComponent as BackspaceIcon } from '../../assets/icons/backspace-o.svg';
 import { drawWall } from '../Draw';
 import { useGlobalContext } from '../GlobalContext';
 import './Keyboard.css';
 
 type INumberButtonProps = {
     value: string;
-    onClick?: () => void;
 };
 
 type IKeyboardProps = {
-    value?: string;
-    onSubmit?: (value: string) => void;
+    topText?: string;
+    bottomText?: string;
+    onSubmit?: (topText: string, bottomText: string) => void;
 };
 
-const Keyboard: React.FC<IKeyboardProps> = ({ value, onSubmit = () => {} }) => {
-    const [text, setText] = useState(value ?? '');
+type IActionButtonProps = {
+    value?: string;
+    icon?: React.ReactNode;
+    onClick: () => void;
+};
 
-    const NumberButton: React.FC<INumberButtonProps> = ({ value, onClick }) => (
-        <button
-            className="keyboard-button"
-            onClick={() => (onClick ? onClick() : setText((prev) => prev + value))}
-        >
+const ActionButton: React.FC<IActionButtonProps> = ({ icon, value, onClick }) => (
+    <button className="keyboard-button" onClick={() => onClick()}>
+        {icon ?? value}
+    </button>
+);
+
+const Keyboard: React.FC<IKeyboardProps> = ({ topText, bottomText, onSubmit = () => {} }) => {
+    const [selectedInput, setSelectedInput] = useState(0);
+    const [text1, setText1] = useState(topText ?? '');
+    const [text2, setText2] = useState(bottomText ?? '');
+    const setText = selectedInput === 0 ? setText1 : setText2;
+
+    useEffect(() => {
+        setText1(topText ?? '');
+        setText2(bottomText ?? '');
+    }, [topText, bottomText]);
+
+    const handleSubmit = () => onSubmit(text1, text2);
+    const handleBackspace = () => setText((prev) => prev.substring(0, prev.length - 1));
+
+    const handleKeyDown: React.KeyboardEventHandler = (e) => {
+        if ('0123456789'.includes(e.key)) {
+            setText((prev) => prev + e.key);
+        } else if (e.key === 'Backspace') {
+            handleBackspace();
+        } else if (e.key === 'Enter') {
+            handleSubmit();
+        }
+    };
+
+    const NumberButton: React.FC<INumberButtonProps> = ({ value }) => (
+        <button className="keyboard-button" onClick={() => setText((prev) => prev + value)}>
             {value}
         </button>
     );
@@ -31,19 +63,46 @@ const Keyboard: React.FC<IKeyboardProps> = ({ value, onSubmit = () => {} }) => {
             <table className="keyboard">
                 <tbody>
                     <tr>
-                        <td colSpan={2}>
-                            <input
-                                value={text}
-                                onChange={(e) => setText(e.target.value)}
-                                className="keyboard-input"
-                            />
+                        <td colSpan={2} className="keyboard-input-cell">
+                            <div
+                                tabIndex={0}
+                                onKeyDown={handleKeyDown}
+                                onClick={() => setSelectedInput(0)}
+                                className={clsx(
+                                    'keyboard-input',
+                                    selectedInput === 0 && 'keyboard-active-input',
+                                    !text1 && 'keyboard-empty-input',
+                                )}
+                            >
+                                <span>{text1 || 'Top'}</span>
+                            </div>
                         </td>
                         <td>
-                            <NumberButton
-                                value="<"
-                                onClick={() =>
-                                    setText((prev) => prev.substring(0, prev.length - 1))
-                                }
+                            <ActionButton
+                                icon={<BackspaceIcon width={18} height={18} />}
+                                onClick={() => setText1((p) => p.substring(0, p.length - 1))}
+                            />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colSpan={2} className={'keyboard-input-cell'}>
+                            <div
+                                tabIndex={0}
+                                onKeyDown={handleKeyDown}
+                                onClick={() => setSelectedInput(1)}
+                                className={clsx(
+                                    'keyboard-input',
+                                    selectedInput === 1 && 'keyboard-active-input',
+                                    !text2 && 'keyboard-empty-input',
+                                )}
+                            >
+                                <span>{text2 || 'Bottom'}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <ActionButton
+                                icon={<BackspaceIcon width={18} height={18} />}
+                                onClick={() => setText2((p) => p.substring(0, p.length - 1))}
                             />
                         </td>
                     </tr>
@@ -85,7 +144,7 @@ const Keyboard: React.FC<IKeyboardProps> = ({ value, onSubmit = () => {} }) => {
                             <NumberButton value="0" />
                         </td>
                         <td className="keyboard-submit">
-                            <NumberButton value="OK" onClick={() => onSubmit(text)} />
+                            <ActionButton value="OK" onClick={handleSubmit} />
                         </td>
                     </tr>
                 </tbody>
@@ -108,19 +167,27 @@ export const MiniKeyboard: React.FC = () => {
     return (
         <div className="mini-keyboard" style={{ top: `${cy + 5}px`, left: `${cx + 5}px` }}>
             <Keyboard
-                value={selectedWall.length}
-                onSubmit={(v) => {
+                topText={selectedWall.topText}
+                bottomText={selectedWall.bottomText}
+                onSubmit={(topText, bottomText) => {
                     const wall = plan.walls.find((w) => w.id === selectedWall.id);
                     if (wall) {
                         commandsHistory.add({
                             tool: 'text',
                             data: {
                                 id: wall.id,
-                                before: wall.length,
-                                after: v,
+                                before: {
+                                    topText: wall.topText,
+                                    bottomText: wall.bottomText,
+                                },
+                                after: {
+                                    topText,
+                                    bottomText,
+                                },
                             },
                         });
-                        wall.length = v;
+                        wall.topText = topText;
+                        wall.bottomText = bottomText;
                         drawWall(drawing, wall);
                     }
                     setValue('selectedWall', undefined);

@@ -109,9 +109,9 @@ function setCircleOptions(ellipse: Element, options: IDrawCircleOptions) {
 
 function setTextOptions(element: Element, options: IDrawTextOptions) {
     const { x, y, angle = 0, fontSize = 25, text, stroke, strokeWidth, fill } = options;
-    element.setAttribute('x', (x - 10).toString());
-    element.setAttribute('y', (y - 10).toString());
-    element.setAttribute('style', `text-anchor: middle;font-size: ${fontSize}`);
+    element.setAttribute('x', x.toString());
+    element.setAttribute('y', (y + 9).toString());
+    element.setAttribute('style', `text-anchor: middle; font-size: ${fontSize}px`);
     element.setAttribute('transform', `rotate(${angle}, ${x}, ${y})`);
     element.textContent = text;
     if (fill) element.setAttribute('fill', fill);

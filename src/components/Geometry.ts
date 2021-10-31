@@ -175,3 +175,17 @@ export function pointProjection(p: Point, l: Line, onLine: boolean = false) {
 
     return { x, y };
 }
+
+export function rotateVector(v: { x: number; y: number }, angle: number) {
+    const cs = Math.cos(angle);
+    const sn = Math.sin(angle);
+    const rx = v.x * cs - v.y * sn;
+    const ry = v.x * sn + v.y * cs;
+    return { x: rx, y: ry };
+}
+
+export function normalizeVector(v: { x: number; y: number }) {
+    const length = Math.sqrt(v.x * v.x + v.y * v.y);
+    if (length === 0) return v;
+    return { x: v.x / length, y: v.y / length };
+}

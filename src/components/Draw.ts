@@ -11,19 +11,6 @@ export type DrawPoint = Point & {
 
 type Context = IDrawing;
 
-export function drawLine(
-    ctx: Context,
-    id: string | undefined,
-    groupId: string | undefined,
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number,
-    strokeDashArray?: string,
-    stroke?: string,
-) {
-    ctx.drawLine({ id, groupId, x1, y1, x2, y2, strokeDashArray, stroke });
-}
 export function drawSquare(
     ctx: Context,
     id: string | undefined,
@@ -57,18 +44,6 @@ export function drawCircle(
     ctx.drawCircle({ id, groupId, x: xc, y: yc, rx: radius, ry: radius, fill, stroke });
 }
 
-export function drawText(
-    ctx: Context,
-    id: string | undefined,
-    groupId: string | undefined,
-    xc: number,
-    yc: number,
-    text: string,
-    angle: number = 0,
-) {
-    ctx.drawText({ id, groupId, x: xc, y: yc, angle, text });
-}
-
 export const wallPointSize = 15;
 export const wallCircleRadius = 20;
 
@@ -81,34 +56,62 @@ export function drawWallStart(ctx: Context, wall: Line) {
 }
 export function drawWallEnd(ctx: Context, wall: Line) {
     const gid = wallGroupId(wall);
-    drawSquare(ctx, `w${wall.id}e`, gid, wall.p2.x, wall.p2.y, wallPointSize, 'red');
+    drawSquare(ctx, `w${wall.id}e`, gid, wall.p2.x, wall.p2.y, wallPointSize, 'green');
 }
 
 export function drawWall(ctx: Context, wall: Wall, color = '#000') {
     const gid = ctx.createGroup(wallGroupId(wall), 'walls');
-    drawCircle(ctx, `w${wall.id}c1`, gid, wall.p1.x, wall.p1.y, wallCircleRadius, 'none', '#000');
-    drawCircle(ctx, `w${wall.id}c2`, gid, wall.p2.x, wall.p2.y, wallCircleRadius, 'none', '#000');
-    drawLine(
-        ctx,
-        `w${wall.id}l`,
-        gid,
-        wall.p1.x,
-        wall.p1.y,
-        wall.p2.x,
-        wall.p2.y,
-        undefined,
-        color,
-    );
+    // drawCircle(ctx, `w${wall.id}c1`, gid, wall.p1.x, wall.p1.y, wallCircleRadius, 'none', '#000');
+    // drawCircle(ctx, `w${wall.id}c2`, gid, wall.p2.x, wall.p2.y, wallCircleRadius, 'none', '#000');
+    ctx.drawLine({
+        groupId: gid,
+        id: `w${wall.id}l`,
+        x1: wall.p1.x,
+        y1: wall.p1.y,
+        x2: wall.p2.x,
+        y2: wall.p2.y,
+        stroke: color,
+    });
     drawWallStart(ctx, wall);
     drawWallEnd(ctx, wall);
-    if (wall.length) {
-        const cx = (wall.p1.x + wall.p2.x) / 2;
-        const cy = (wall.p1.y + wall.p2.y) / 2;
-        let angle = getAngle(wall.p1, wall.p2);
-        if (angle >= 90 && angle < 270) angle -= 180;
-        drawText(ctx, `w${wall.id}t`, gid, cx, cy, `${wall.length}`, angle);
+    drawLengths(ctx, wall, color);
+}
+
+function drawLengths(ctx: Context, wall: Wall, color: string) {
+    const gid = wallGroupId(wall);
+
+    const cx = (wall.p1.x + wall.p2.x) / 2;
+    const cy = (wall.p1.y + wall.p2.y) / 2;
+    let angle = getAngle(wall.p1, wall.p2);
+    if (angle >= 90 && angle < 270) angle -= 180;
+    let alpha = -(angle * Math.PI) / 180;
+
+    if (wall.topText) {
+        ctx.drawText({
+            groupId: gid,
+            id: `w${wall.id}t1`,
+            text: `${wall.topText}`,
+            x: cx - 18 * Math.sin(alpha),
+            y: cy - 18 * Math.cos(alpha),
+            fill: color,
+            angle,
+        });
     } else {
-        ctx.removeElement(`w${wall.id}t`, gid);
+        ctx.removeElement(`w${wall.id}t1`, gid);
+    }
+
+    if (wall.bottomText) {
+        ctx.drawText({
+            groupId: gid,
+            id: `w${wall.id}t2`,
+            text: `${wall.bottomText}`,
+            x: cx + 18 * Math.sin(alpha),
+            y: cy + 18 * Math.cos(alpha),
+            fill: color,
+            angle,
+        });
+    } else {
+        ctx.removeElement(`w${wall.id}t2`, gid);
     }
 }
 
@@ -116,16 +119,15 @@ export function drawGuideLines(ctx: Context, point: Point, guideLines: GuideLine
     const groupId = ctx.createGroup(pointGroupId(point), 'guide');
     const guideLinesIds = guideLines.map((guideLine) => {
         const guideLineId = `p${point.editId}g${guideLine.wall.id}`;
-        drawLine(
-            ctx,
-            guideLineId,
+        ctx.drawLine({
             groupId,
-            point.x,
-            point.y,
-            guideLine.point.x,
-            guideLine.point.y,
-            '10 10',
-        );
+            id: guideLineId,
+            x1: point.x,
+            y1: point.y,
+            x2: guideLine.point.x,
+            y2: guideLine.point.y,
+            strokeDashArray: '10 10',
+        });
         return guideLineId;
     });
     ctx.removeElements((child) => !guideLinesIds.includes((child as Element).id), groupId);
