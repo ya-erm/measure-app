@@ -19,9 +19,13 @@ export type Line = {
     editId?: number;
 };
 
+export type IWallType = 'wall' | 'window' | 'door' | 'ruler';
+
 export type Wall = Line & {
     topText?: string;
     bottomText?: string;
+    type?: IWallType;
+    variant?: string;
 };
 
 export type IPlan = {

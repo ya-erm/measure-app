@@ -42,7 +42,6 @@ function App() {
                         <b>What need to do</b>
                         <li>handle resize</li>
                         <li>pen color, width</li>
-                        <li>door, window</li>
                         <li>keyboard outside</li>
                         <li>translate app</li>
                         <li>custom zoom</li>

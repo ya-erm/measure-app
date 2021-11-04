@@ -39,30 +39,30 @@ export type IDestroyHistoryRecord = {
     };
 };
 
-export type ITextHistoryRecord = {
-    tool: 'text';
-    data: {
-        id: string;
-        before?: {
-            topText?: string;
-            bottomText?: string;
-        };
-        after?: {
-            topText?: string;
-            bottomText?: string;
-        };
-    };
-};
-
 export type IHistoryRecord =
     | IWallHistoryRecord
     | ICursorHistoryRecord
     | IPencilHistoryRecord
-    | IDestroyHistoryRecord
-    | ITextHistoryRecord;
+    | IDestroyHistoryRecord;
 
 let undoHistory: IHistoryRecord[] = [];
 let redoHistory: IHistoryRecord[] = [];
+
+function restoreFrom<T>(source: T, destination: T) {
+    Object.entries(source).forEach(([key, value]) => {
+        // @ts-ignore
+        destination[key] = value;
+    });
+
+    // Remove deleted properties
+    const sourceKeys = Object.keys(source);
+    Object.keys(destination)
+        .filter((key) => !sourceKeys.includes(key))
+        .forEach((key) => {
+            // @ts-ignore
+            delete destination[key];
+        });
+}
 
 export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
     const history: IHistory = useMemo(
@@ -89,10 +89,10 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                             plan.walls
                                 .filter((w) => w.id === wall.id)
                                 .forEach((w) => {
-                                    w.p1 = wall.p1;
-                                    w.p2 = wall.p2;
+                                    debugger;
+                                    restoreFrom(wall, w);
+                                    drawWall(drawing, w);
                                 });
-                            drawWall(drawing, wall);
                         });
                         break;
                     case 'pencil':
@@ -110,17 +110,6 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                             drawWall(drawing, w);
                         });
                         break;
-                    case 'text': {
-                        const { id, before } = item.data;
-                        plan.walls
-                            .filter((w) => w.id === id)
-                            .forEach((w) => {
-                                w.topText = before?.topText;
-                                w.bottomText = before?.bottomText;
-                                drawWall(drawing, w);
-                            });
-                        break;
-                    }
                 }
                 savePlan(plan);
             },
@@ -141,8 +130,7 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                             plan.walls
                                 .filter((w) => w.id === wall.id)
                                 .forEach((w) => {
-                                    w.p1 = wall.p1;
-                                    w.p2 = wall.p2;
+                                    restoreFrom(wall, w);
                                     drawWall(drawing, w);
                                 });
                         });
@@ -158,17 +146,6 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                         destroyedWalls.forEach((w) => drawing.removeElement(wallGroupId(w)));
                         plan.walls = plan.walls.filter((w) => !destroyedWalls.includes(w));
                         break;
-                    case 'text': {
-                        const { id, after } = item.data;
-                        plan.walls
-                            .filter((w) => w.id === id)
-                            .forEach((w) => {
-                                w.topText = after?.topText;
-                                w.bottomText = after?.bottomText;
-                                drawWall(drawing, w);
-                            });
-                        break;
-                    }
                 }
                 savePlan(plan);
             },

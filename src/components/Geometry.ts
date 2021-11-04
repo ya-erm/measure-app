@@ -17,8 +17,10 @@ export function getAngle(p1: Point, p2: Point) {
     const x2 = p2.x;
     const y2 = p2.y;
     let degrees;
-    if (x2 - x1 === 0) {
+    if (x2 === x1) {
         degrees = y2 > y1 ? 90 : 270;
+    } else if (y2 === y1) {
+        degrees = x2 > x1 ? 0 : 180;
     } else {
         const riseOverRun = (y2 - y1) / (x2 - x1);
         const radians = Math.atan(riseOverRun);
@@ -188,4 +190,12 @@ export function normalizeVector(v: { x: number; y: number }) {
     const length = Math.sqrt(v.x * v.x + v.y * v.y);
     if (length === 0) return v;
     return { x: v.x / length, y: v.y / length };
+}
+
+export function polarToCartesian(cx: number, cy: number, radius: number, angle: number) {
+    var angleInRadians = ((angle - 90) * Math.PI) / 180.0;
+    return {
+        x: cx + radius * Math.cos(angleInRadians),
+        y: cy + radius * Math.sin(angleInRadians),
+    };
 }

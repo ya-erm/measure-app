@@ -1,0 +1,44 @@
+.wall-types-container {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+.wall-type-button {
+    padding: 2px;
+    width: 26px;
+    height: 26px;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #7e7e7e;
+    cursor: pointer;
+}
+
+.wall-type-button:not(:last-child){
+    border-right: none;
+}
+
+.wall-type-button:first-child {
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+}
+.wall-type-button:last-child {
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.wall-type-button:hover {
+    background-color: #f3f3f3
+}
+
+.wall-type-active-button {
+    background-color: #d5e2ff;
+}
+
+.wall-type-active-button:hover {
+    background-color: #d1dfff;
+}

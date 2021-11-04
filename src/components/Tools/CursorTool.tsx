@@ -20,6 +20,10 @@ function cloneEditingWalls(walls: Wall[]): Wall[] {
         });
 }
 
+function areWallsCoordinatesEqual(w1: Wall, w2: Wall) {
+    return w1.p1.x === w2.p1.x && w1.p1.y === w2.p1.y && w1.p2.x === w2.p2.x && w1.p2.y === w2.p2.y;
+}
+
 export const CursorTool: React.FC = () => {
     const { commandsHistory, interactiveRef, drawing, control, setValue } = useGlobalContext();
     const { stylusMode, magneticMode, wallAlignmentMode, selectedTool } = useWatch({
@@ -35,7 +39,7 @@ export const CursorTool: React.FC = () => {
         }
 
         let _wallBefore: Wall[] = [];
-        let selectedWall: Wall | undefined;
+        let _selectedWall: Wall | undefined;
 
         const onStart = (e: ToolEvent) => {
             if (stylusMode && e.type !== 'stylus') return;
@@ -60,10 +64,10 @@ export const CursorTool: React.FC = () => {
                           })
                         : undefined;
 
-                if (selectedWall) drawWall(drawing, selectedWall);
-                selectedWall = newSelectedWall;
-                if (selectedWall) drawWall(drawing, selectedWall, '#00f');
-                setValue('selectedWall', selectedWall);
+                if (_selectedWall) drawWall(drawing, _selectedWall);
+                _selectedWall = newSelectedWall;
+                if (_selectedWall) drawWall(drawing, _selectedWall, '#00f');
+                setValue('selectedWall', _selectedWall);
 
                 _wallBefore = cloneEditingWalls(plan.walls);
             });
@@ -112,13 +116,22 @@ export const CursorTool: React.FC = () => {
                         }
                     });
 
-                commandsHistory.add({
-                    tool: 'cursor',
-                    data: {
-                        before: _wallBefore,
-                        after: cloneEditingWalls(plan.walls),
-                    },
-                });
+                const isAnyWallMoved =
+                    plan.walls
+                        .filter((w) => w.p1.editId || w.p2.editId)
+                        .filter((w) => {
+                            const w2 = _wallBefore.find((x) => x.id === w.id);
+                            return w2 && !areWallsCoordinatesEqual(w, w2);
+                        }).length > 0;
+                if (isAnyWallMoved) {
+                    commandsHistory.add({
+                        tool: 'cursor',
+                        data: {
+                            before: _wallBefore,
+                            after: cloneEditingWalls(plan.walls),
+                        },
+                    });
+                }
 
                 plan.walls
                     .filter((w) => w.p1.editId || w.p2.editId)

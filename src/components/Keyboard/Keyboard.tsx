@@ -1,10 +1,12 @@
 import clsx from 'clsx';
+import cloneDeep from 'lodash.clonedeep';
 import React, { useEffect, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 import { ReactComponent as BackspaceIcon } from '../../assets/icons/backspace-o.svg';
 import { drawWall } from '../Draw';
 import { useGlobalContext } from '../GlobalContext';
 import './Keyboard.css';
+import { WallTypeSelector } from './WallTypeSelector';
 
 type INumberButtonProps = {
     value: string;
@@ -79,7 +81,7 @@ const Keyboard: React.FC<IKeyboardProps> = ({ topText, bottomText, onSubmit = ()
                         </td>
                         <td>
                             <ActionButton
-                                icon={<BackspaceIcon width={18} height={18} />}
+                                icon={<BackspaceIcon width={16} height={16} />}
                                 onClick={() => setText1((p) => p.substring(0, p.length - 1))}
                             />
                         </td>
@@ -101,7 +103,7 @@ const Keyboard: React.FC<IKeyboardProps> = ({ topText, bottomText, onSubmit = ()
                         </td>
                         <td>
                             <ActionButton
-                                icon={<BackspaceIcon width={18} height={18} />}
+                                icon={<BackspaceIcon width={16} height={16} />}
                                 onClick={() => setText2((p) => p.substring(0, p.length - 1))}
                             />
                         </td>
@@ -166,28 +168,41 @@ export const MiniKeyboard: React.FC = () => {
     const cy = (selectedWall.p1.y + selectedWall.p2.y) / 2 / scale;
     return (
         <div className="mini-keyboard" style={{ top: `${cy + 5}px`, left: `${cx + 5}px` }}>
+            <WallTypeSelector
+                wallType={selectedWall.type}
+                variant={selectedWall.variant}
+                onSubmit={(type, variant) => {
+                    const wall = plan.walls.find((w) => w.id === selectedWall.id);
+                    if (wall) {
+                        wall.type = type;
+                        wall.variant = variant;
+                        commandsHistory.add({
+                            tool: 'cursor',
+                            data: {
+                                before: [cloneDeep(selectedWall)],
+                                after: [cloneDeep(wall)],
+                            },
+                        });
+                        drawWall(drawing, wall);
+                    }
+                    setValue('selectedWall', { ...selectedWall, type, variant });
+                }}
+            />
             <Keyboard
                 topText={selectedWall.topText}
                 bottomText={selectedWall.bottomText}
                 onSubmit={(topText, bottomText) => {
                     const wall = plan.walls.find((w) => w.id === selectedWall.id);
                     if (wall) {
-                        commandsHistory.add({
-                            tool: 'text',
-                            data: {
-                                id: wall.id,
-                                before: {
-                                    topText: wall.topText,
-                                    bottomText: wall.bottomText,
-                                },
-                                after: {
-                                    topText,
-                                    bottomText,
-                                },
-                            },
-                        });
                         wall.topText = topText;
                         wall.bottomText = bottomText;
+                        commandsHistory.add({
+                            tool: 'cursor',
+                            data: {
+                                before: [cloneDeep(selectedWall)],
+                                after: [cloneDeep(wall)],
+                            },
+                        });
                         drawWall(drawing, wall);
                     }
                     setValue('selectedWall', undefined);
