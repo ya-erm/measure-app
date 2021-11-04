@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
 import { getStroke } from 'perfect-freehand';
-import { getSvgPathFromStroke } from '../utils/svg/convert';
+import React, { useEffect, useRef } from 'react';
 import { polarToCartesian } from '../components/Geometry';
+import { getSvgPathFromStroke } from '../utils/svg/convert';
 
 type IDrawIdOptions = {
     id?: string;
@@ -190,15 +190,18 @@ export function useDrawing(scale: number = 1): UseDrawingReturn {
     const svgRef = useRef<SVGSVGElement>(null);
 
     useEffect(() => {
-        const svg = svgRef.current;
-        const parent = svg?.parentElement;
-        if (!svg || !parent) return;
-        const { width, height } = parent!.getBoundingClientRect();
-        svg.setAttribute('viewBox', `0 0 ${width * scale} ${height * scale}`);
-        svg.setAttribute('version', '1.1');
-        svg.setAttribute('xmlns', SVG_NS);
-        svg.setAttribute('width', `${width * scale}`);
-        svg.setAttribute('height', `${height * scale}`);
+        function handleResize() {
+            const svg = svgRef.current;
+            const parent = svg?.parentElement;
+            if (!svg || !parent) return;
+            const { width, height } = parent!.getBoundingClientRect();
+            svg.setAttribute('viewBox', `0 0 ${width * scale} ${height * scale}`);
+            svg.setAttribute('version', '1.1');
+            svg.setAttribute('xmlns', SVG_NS);
+        }
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, [scale, svgRef]);
 
     const drawing: IDrawing = {
