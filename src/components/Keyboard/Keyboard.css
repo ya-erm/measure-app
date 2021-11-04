@@ -103,4 +103,9 @@
 
 .keyboard-submit button {
     font-size: 0.8rem;
+    background: #e9f0ff;
+}
+
+.keyboard-submit button:hover {
+    background: #e4ecfd;
 }

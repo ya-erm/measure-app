@@ -3,6 +3,7 @@ import cloneDeep from 'lodash.clonedeep';
 import React, { useEffect, useState } from 'react';
 import { useWatch } from 'react-hook-form';
 import { ReactComponent as BackspaceIcon } from '../../assets/icons/backspace-o.svg';
+import { ReactComponent as SwapIcon } from '../../assets/icons/swap.svg';
 import { drawWall } from '../Draw';
 import { useGlobalContext } from '../GlobalContext';
 import './Keyboard.css';
@@ -20,18 +21,20 @@ type IKeyboardProps = {
 
 type IActionButtonProps = {
     value?: string;
+    title?: string;
     icon?: React.ReactNode;
+    className?: string;
     onClick: () => void;
 };
 
-const ActionButton: React.FC<IActionButtonProps> = ({ icon, value, onClick }) => (
-    <button className="keyboard-button" onClick={() => onClick()}>
+const ActionButton: React.FC<IActionButtonProps> = ({ icon, title, value, className, onClick }) => (
+    <button title={title} className={clsx('keyboard-button', className)} onClick={() => onClick()}>
         {icon ?? value}
     </button>
 );
 
 const Keyboard: React.FC<IKeyboardProps> = ({ topText, bottomText, onSubmit = () => {} }) => {
-    const [selectedInput, setSelectedInput] = useState(0);
+    const [selectedInput, setSelectedInput] = useState(!topText && bottomText ? 1 : 0);
     const [text1, setText1] = useState(topText ?? '');
     const [text2, setText2] = useState(bottomText ?? '');
     const setText = selectedInput === 0 ? setText1 : setText2;
@@ -55,7 +58,11 @@ const Keyboard: React.FC<IKeyboardProps> = ({ topText, bottomText, onSubmit = ()
     };
 
     const NumberButton: React.FC<INumberButtonProps> = ({ value }) => (
-        <button className="keyboard-button" onClick={() => setText((prev) => prev + value)}>
+        <button
+            title={value}
+            className="keyboard-button"
+            onClick={() => setText((prev) => prev + value)}
+        >
             {value}
         </button>
     );
@@ -81,8 +88,12 @@ const Keyboard: React.FC<IKeyboardProps> = ({ topText, bottomText, onSubmit = ()
                         </td>
                         <td>
                             <ActionButton
-                                icon={<BackspaceIcon width={16} height={16} />}
-                                onClick={() => setText1((p) => p.substring(0, p.length - 1))}
+                                title="Swap"
+                                icon={<SwapIcon width={18} height={18} />}
+                                onClick={() => {
+                                    setText1(text2);
+                                    setText2(text1);
+                                }}
                             />
                         </td>
                     </tr>
@@ -103,8 +114,9 @@ const Keyboard: React.FC<IKeyboardProps> = ({ topText, bottomText, onSubmit = ()
                         </td>
                         <td>
                             <ActionButton
+                                title="Backspace"
                                 icon={<BackspaceIcon width={16} height={16} />}
-                                onClick={() => setText2((p) => p.substring(0, p.length - 1))}
+                                onClick={() => setText((p) => p.substring(0, p.length - 1))}
                             />
                         </td>
                     </tr>
