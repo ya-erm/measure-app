@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
 import './App.css';
-import { FileActions } from './components/FileActions/FileActions';
 import { GlobalContext, useGlobalState } from './components/GlobalContext';
 import { HistoryPanel } from './components/History/HistoryPanel';
 import { MiniKeyboard } from './components/Keyboard/Keyboard';
 import PreventTouch from './components/PreventTouch';
-import { Settings } from './components/Settings/Settings';
+import { SettingsPanel } from './components/Settings/SettingsPanel';
 import { CursorTool } from './components/Tools/CursorTool';
 import { DestroyTool } from './components/Tools/DestroyTool';
 import { HistoryTool } from './components/Tools/HistoryTool';
@@ -39,20 +38,7 @@ function App() {
                     </svg>
                 </div>
                 <Toolbox />
-                <div className="rightMenu">
-                    <Settings />
-                    <FileActions />
-                    <ol style={{ paddingInlineStart: 15, margin: 0 }}>
-                        <b>What need to do</b>
-                        <li>custom zoom</li>
-                        <li>add cutter tool</li>
-                        <li>translate app</li>
-                        <li>hide setting</li>
-                        <li>keyboard fix</li>
-                        <li>toolbox hotkeys</li>
-                        <li>pen color, width</li>
-                    </ol>
-                </div>
+                <SettingsPanel />
                 <MiniKeyboard />
                 <HistoryPanel />
             </main>

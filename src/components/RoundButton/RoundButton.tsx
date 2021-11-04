@@ -5,6 +5,7 @@ import './RoundButton.css';
 type IRoundButtonProps = {
     icon?: JSX.Element;
     title?: string;
+    active?: boolean;
     className?: string;
     onClick: () => void;
 };
@@ -12,12 +13,17 @@ type IRoundButtonProps = {
 export const RoundButton: React.FC<IRoundButtonProps> = ({
     icon,
     title,
+    active,
     className,
     children,
     onClick,
 }) => {
     return (
-        <div title={title} className={clsx('roundButton', className)} onClick={onClick}>
+        <div
+            title={title}
+            className={clsx('roundButton', active && 'roundButtonActive', className)}
+            onClick={onClick}
+        >
             {icon}
             {children}
         </div>

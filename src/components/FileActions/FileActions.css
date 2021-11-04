@@ -1,5 +1,5 @@
 .fileActionsContainer {
     display: flex;
-    flex-direction: column;
-    gap: 5px;
+    flex-direction: row;
+    gap: 10px;
 }

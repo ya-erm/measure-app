@@ -7,11 +7,3 @@
     flex-direction: column;
     gap: 10px;
 }
-
-.toolboxSelectedItem {
-    background-color: #d5e2ff;
-}
-
-.toolboxSelectedItem:hover {
-    background-color: #d1dfff;
-}

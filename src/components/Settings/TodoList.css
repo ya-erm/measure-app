@@ -1,0 +1,13 @@
+.todoListHeader {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.todoList {
+    padding-inline-start: 15px;
+    margin: 0
+}
+
+.todoList li {
+    padding: 2px 0;
+}

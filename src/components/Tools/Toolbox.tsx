@@ -1,11 +1,10 @@
-import clsx from 'clsx';
 import React from 'react';
 import { useWatch } from 'react-hook-form';
+import { ReactComponent as DestroyIcon } from '../../assets/icons/bulldozer.svg';
 import { ReactComponent as CursorIcon } from '../../assets/icons/cursor.svg';
 import { ReactComponent as EraserIcon } from '../../assets/icons/eraser.svg';
 import { ReactComponent as PencilIcon } from '../../assets/icons/pencil.svg';
 import { ReactComponent as WallIcon } from '../../assets/icons/wall.svg';
-import { ReactComponent as DestroyIcon } from '../../assets/icons/bulldozer.svg';
 import { IToolType, useGlobalContext } from '../GlobalContext';
 import { RoundButton } from '../RoundButton/RoundButton';
 import './Toolbox.css';
@@ -29,8 +28,8 @@ export const Toolbox: React.FC<IToolboxProps> = () => {
         return (
             <RoundButton
                 title={name}
+                active={selectedTool === type}
                 onClick={() => setSelectedTool(type)}
-                className={clsx(selectedTool === type && 'toolboxSelectedItem')}
             >
                 {icon ?? name}
             </RoundButton>

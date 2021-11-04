@@ -14,8 +14,8 @@ export const Settings: React.FC = () => {
 
     return (
         <div className="settingsList">
-            <div>
-                <b>Settings</b>
+            <div className="settingsHeader">
+                <h2>Settings</h2>
             </div>
             <div>
                 <label>
@@ -48,10 +48,6 @@ export const Settings: React.FC = () => {
                     Magnet mode
                 </label>
             </div>
-
-            <a href="https://perfect-freehand-example.vercel.app/" target="_blank" rel="noreferrer">
-                Perfect freehand
-            </a>
         </div>
     );
 };

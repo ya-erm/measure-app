@@ -2,8 +2,8 @@
     width: 50px;
     height: 50px;
     border-radius: 25px;
-    box-shadow: 5px 5px 5px #00000010;
-    border: 1px solid #eee;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -13,4 +13,12 @@
 
 .roundButton:hover {
     background-color: #fafafa;
+}
+
+.roundButtonActive {
+    background-color: #d5e2ff;
+}
+
+.roundButtonActive:hover {
+    background-color: #d1dfff;
 }
