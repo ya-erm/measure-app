@@ -7,8 +7,8 @@ export type ToolEvent = {
 
     type: 'mouse' | 'stylus' | 'touch';
     buttons?: number;
-    touches?: TypedTouch[];
-    changedTouches?: TypedTouch[];
+    touches: TypedTouch[];
+    changedTouches: TypedTouch[];
 };
 
 export type ToolEventHandler = (e: ToolEvent) => void;
@@ -20,19 +20,21 @@ export function registerTool(
     onEnd: ToolEventHandler,
 ) {
     function mouseToToolEvent(e: MouseEvent): ToolEvent {
+        const touches = [
+            {
+                identifier: 1,
+                pageX: e.pageX,
+                pageY: e.pageY,
+            } as TypedTouch,
+        ];
         return {
             id: 1,
             x: e.pageX,
             y: e.pageY,
             type: 'mouse',
             buttons: e.buttons,
-            changedTouches: [
-                {
-                    identifier: 1,
-                    pageX: e.pageX,
-                    pageY: e.pageY,
-                } as any as TypedTouch,
-            ],
+            changedTouches: touches,
+            touches,
         };
     }
     const onMouseDown = (e: MouseEvent) => onStart(mouseToToolEvent(e));

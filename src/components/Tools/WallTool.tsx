@@ -9,11 +9,12 @@ import {
     wallGroupId,
 } from '../Draw';
 import { distanceBetween, findAlignedGuideLines, getWallOrientation } from '../Geometry';
-import { Line, useGlobalContext } from '../GlobalContext';
+import { getViewBox, Line, useGlobalContext } from '../GlobalContext';
 import { registerTool, ToolEvent } from './ToolEvent';
 
 export const WallTool: React.FC = () => {
-    const { commandsHistory, interactiveRef, drawing, control, setValue } = useGlobalContext();
+    const { commandsHistory, interactiveRef, drawingRef, drawing, control, setValue } =
+        useGlobalContext();
     const { stylusMode, magneticMode, wallAlignmentMode, selectedTool } = useWatch({
         control,
         name: 'settings',
@@ -36,8 +37,9 @@ export const WallTool: React.FC = () => {
         };
 
         const onStart = (e: ToolEvent) => {
-            const x = e.x * scale;
-            const y = e.y * scale;
+            const viewBox = getViewBox(drawingRef);
+            const x = viewBox.x + e.x * scale;
+            const y = viewBox.y + e.y * scale;
             if (stylusMode && e.type !== 'stylus') return;
             if (e.type === 'touch' && e.touches!.length > 1) {
                 setValue('pointerDown', false);
@@ -76,8 +78,9 @@ export const WallTool: React.FC = () => {
 
         const onMove = (e: ToolEvent) => {
             if (e.type === 'mouse' && !e.buttons) return;
-            const x = e.x * scale;
-            const y = e.y * scale;
+            const viewBox = getViewBox(drawingRef);
+            const x = viewBox.x + e.x * scale;
+            const y = viewBox.y + e.y * scale;
             const wall = plan.walls.find((x) => x.editId === e.id);
             if (wall) {
                 wall.p2.x = x;
@@ -133,6 +136,7 @@ export const WallTool: React.FC = () => {
         interactiveRef,
         selectedTool,
         plan.walls,
+        drawingRef,
         drawing,
         setValue,
     ]);

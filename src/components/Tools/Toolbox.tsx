@@ -2,6 +2,7 @@ import React from 'react';
 import { useWatch } from 'react-hook-form';
 import { ReactComponent as DestroyIcon } from '../../assets/icons/bulldozer.svg';
 import { ReactComponent as CursorIcon } from '../../assets/icons/cursor.svg';
+import { ReactComponent as MoveIcon } from '../../assets/icons/eye.svg';
 import { ReactComponent as EraserIcon } from '../../assets/icons/eraser.svg';
 import { ReactComponent as PencilIcon } from '../../assets/icons/pencil.svg';
 import { ReactComponent as WallIcon } from '../../assets/icons/wall.svg';
@@ -43,6 +44,7 @@ export const Toolbox: React.FC<IToolboxProps> = () => {
             <ToolBoxItem type="cursor" name="Cursor" icon={<CursorIcon />} />
             <ToolBoxItem type="pencil" name="Pencil" icon={<PencilIcon />} />
             <ToolBoxItem type="eraser" name="Eraser" icon={<EraserIcon />} />
+            <ToolBoxItem type="move" name="Move" icon={<MoveIcon />} />
         </div>
     );
 };

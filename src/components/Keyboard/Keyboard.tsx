@@ -5,7 +5,7 @@ import { useWatch } from 'react-hook-form';
 import { ReactComponent as BackspaceIcon } from '../../assets/icons/backspace-o.svg';
 import { ReactComponent as SwapIcon } from '../../assets/icons/swap.svg';
 import { drawWall } from '../Draw';
-import { useGlobalContext } from '../GlobalContext';
+import { getViewBox, useGlobalContext } from '../GlobalContext';
 import './Keyboard.css';
 import { WallTypeSelector } from './WallTypeSelector';
 
@@ -168,7 +168,7 @@ const Keyboard: React.FC<IKeyboardProps> = ({ topText, bottomText, onSubmit = ()
 };
 
 export const MiniKeyboard: React.FC = () => {
-    const { control, drawing, commandsHistory, setValue } = useGlobalContext();
+    const { control, drawingRef, drawing, commandsHistory, setValue } = useGlobalContext();
     const selectedWall = useWatch({ control, name: 'selectedWall' });
     const scale = useWatch({ control, name: 'scale' });
     const plan = useWatch({ control, name: 'plan' });
@@ -176,8 +176,9 @@ export const MiniKeyboard: React.FC = () => {
         return null;
     }
 
-    const cx = (selectedWall.p1.x + selectedWall.p2.x) / 2 / scale;
-    const cy = (selectedWall.p1.y + selectedWall.p2.y) / 2 / scale;
+    const viewBox = getViewBox(drawingRef);
+    const cx = ((selectedWall.p1.x + selectedWall.p2.x) / 2 - viewBox.x) / scale;
+    const cy = ((selectedWall.p1.y + selectedWall.p2.y) / 2 - viewBox.y) / scale;
     return (
         <div className="mini-keyboard" style={{ top: `${cy + 5}px`, left: `${cx + 5}px` }}>
             <WallTypeSelector

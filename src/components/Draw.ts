@@ -72,7 +72,7 @@ export function drawWall(ctx: Context, wall: Wall, color = '#000') {
             width: distanceBetween(wall.p1, wall.p2),
             height: wall.type === 'window' ? wallPointSize / 2 : wallPointSize,
             strokeWidth: 1,
-            stroke: '#000',
+            stroke: color,
             fill: wall.type === 'window' ? 'none' : '#ccc',
         });
         ctx.removeElement(`w${wall.id}l`, bodyId);

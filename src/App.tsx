@@ -8,6 +8,7 @@ import { SettingsPanel } from './components/Settings/SettingsPanel';
 import { CursorTool } from './components/Tools/CursorTool';
 import { DestroyTool } from './components/Tools/DestroyTool';
 import { HistoryTool } from './components/Tools/HistoryTool';
+import { MoveTool } from './components/Tools/MoveTool';
 import { PenTool } from './components/Tools/PenTool';
 import { Toolbox } from './components/Tools/Toolbox';
 import { WallTool } from './components/Tools/WallTool';
@@ -30,6 +31,7 @@ function App() {
                 <CursorTool />
                 <PenTool />
                 <DestroyTool />
+                <MoveTool />
                 <div ref={interactiveRef} className="paper main">
                     <svg ref={drawingRef}>
                         <g id="pen" />

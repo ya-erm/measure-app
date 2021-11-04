@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useWatch } from 'react-hook-form';
 import { drawGuideLines, drawWall, removeGuideLines, wallCircleRadius } from '../Draw';
 import { distanceBetween, findAllGuideLines, pointProjection } from '../Geometry';
-import { useGlobalContext, Wall } from '../GlobalContext';
+import { getViewBox, useGlobalContext, Wall } from '../GlobalContext';
 import { registerTool, ToolEvent } from './ToolEvent';
 
 function cloneEditingWalls(walls: Wall[]): Wall[] {
@@ -25,7 +25,8 @@ function areWallsCoordinatesEqual(w1: Wall, w2: Wall) {
 }
 
 export const CursorTool: React.FC = () => {
-    const { commandsHistory, interactiveRef, drawing, control, setValue } = useGlobalContext();
+    const { commandsHistory, interactiveRef, drawingRef, drawing, control, setValue } =
+        useGlobalContext();
     const { stylusMode, magneticMode, wallAlignmentMode, selectedTool } = useWatch({
         control,
         name: 'settings',
@@ -44,10 +45,11 @@ export const CursorTool: React.FC = () => {
         const onStart = (e: ToolEvent) => {
             if (stylusMode && e.type !== 'stylus') return;
             setValue('pointerDown', true);
+            const viewBox = getViewBox(drawingRef);
             e.changedTouches?.forEach((touch) => {
                 const id = touch.identifier;
-                const x = touch.pageX * scale;
-                const y = touch.pageY * scale;
+                const x = viewBox.x + touch.pageX * scale;
+                const y = viewBox.y + touch.pageY * scale;
                 const points = plan.walls
                     .flatMap((item) => [item.p1, item.p2])
                     .filter((p) => distanceBetween(p, { x, y }) <= wallCircleRadius)
@@ -75,10 +77,11 @@ export const CursorTool: React.FC = () => {
 
         const onMove = (e: ToolEvent) => {
             if (e.type === 'mouse' && !e.buttons) return;
+            const viewBox = getViewBox(drawingRef);
             e.changedTouches?.forEach((touch) => {
                 const id = touch.identifier;
-                const x = touch.pageX * scale;
-                const y = touch.pageY * scale;
+                const x = viewBox.x + touch.pageX * scale;
+                const y = viewBox.y + touch.pageY * scale;
                 const editingPoints = plan.walls
                     .flatMap((w) => [w.p1, w.p2])
                     .filter((p) => p.editId === id);
@@ -157,6 +160,7 @@ export const CursorTool: React.FC = () => {
         interactiveRef,
         selectedTool,
         plan.walls,
+        drawingRef,
         drawing,
         setValue,
     ]);

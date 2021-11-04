@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import { useWatch } from 'react-hook-form';
 import { DrawPoint } from '../Draw';
-import { IToolType, useGlobalContext } from '../GlobalContext';
+import { getViewBox, IToolType, useGlobalContext } from '../GlobalContext';
 import { registerTool, ToolEvent } from './ToolEvent';
 
 const tools: IToolType[] = ['pencil', 'eraser'];
 
 export const PenTool: React.FC = () => {
-    const { commandsHistory, interactiveRef, drawing, control, setValue } = useGlobalContext();
+    const { commandsHistory, interactiveRef, drawingRef, drawing, control, setValue } =
+        useGlobalContext();
     const { stylusMode, magneticMode, selectedTool } = useWatch({ control, name: 'settings' });
     const scale = useWatch({ control, name: 'scale' });
     const plan = useWatch({ control, name: 'plan' });
@@ -31,10 +32,12 @@ export const PenTool: React.FC = () => {
             if (stylusMode && e.type !== 'stylus') return;
             if (e.type === 'touch' && e.touches!.length > 1) return;
             setValue('pointerDown', true);
-            const touch = e.touches && e.touches[0];
-            const x = (touch?.pageX ?? e.x) * scale;
-            const y = (touch?.pageY ?? e.y) * scale;
-            points.push({ x, y, pressure: Number(touch?.force.toFixed(3)) });
+            const viewBox = getViewBox(drawingRef);
+            const x = viewBox.x + e.x * scale;
+            const y = viewBox.y + e.y * scale;
+            const force = e.touches[0]?.force;
+            const pressure = force ? Number(force.toFixed(3)) : undefined;
+            points.push({ x, y, pressure });
             const { stroke, strokeWidth } = getStrokeOptions();
             id = drawing.drawPath({
                 points,
@@ -47,10 +50,12 @@ export const PenTool: React.FC = () => {
         const onMove = (e: ToolEvent) => {
             if (stylusMode && e.type !== 'stylus') return;
             if (e.type === 'mouse' && !e.buttons) return;
-            const touch = e.touches && e.touches[0];
-            const x = (touch?.pageX ?? e.x) * scale;
-            const y = (touch?.pageY ?? e.y) * scale;
-            points!.push({ x, y, pressure: Number(touch?.force.toFixed(3)) });
+            const viewBox = getViewBox(drawingRef);
+            const x = viewBox.x + e.x * scale;
+            const y = viewBox.y + e.y * scale;
+            const force = e.touches[0]?.force;
+            const pressure = force ? Number(force.toFixed(3)) : undefined;
+            points.push({ x, y, pressure });
             const { strokeWidth } = getStrokeOptions();
             drawing.drawPath({ id, points, strokeWidth });
         };
@@ -79,6 +84,7 @@ export const PenTool: React.FC = () => {
         interactiveRef,
         commandsHistory,
         selectedTool,
+        drawingRef,
         drawing,
         plan,
         setValue,

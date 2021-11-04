@@ -2,11 +2,12 @@ import React, { useEffect } from 'react';
 import { useWatch } from 'react-hook-form';
 import { drawCircle, wallGroupId } from '../Draw';
 import { crossLines } from '../Geometry';
-import { Point, useGlobalContext } from '../GlobalContext';
+import { getViewBox, Point, useGlobalContext } from '../GlobalContext';
 import { registerTool, ToolEvent } from './ToolEvent';
 
 export const DestroyTool: React.FC = () => {
-    const { commandsHistory, interactiveRef, drawing, control, setValue } = useGlobalContext();
+    const { commandsHistory, interactiveRef, drawingRef, drawing, control, setValue } =
+        useGlobalContext();
     const { stylusMode, selectedTool } = useWatch({ control, name: 'settings' });
     const scale = useWatch({ control, name: 'scale' });
     const plan = useWatch({ control, name: 'plan' });
@@ -19,8 +20,9 @@ export const DestroyTool: React.FC = () => {
         let start: Point | undefined;
 
         const onStart = (e: ToolEvent) => {
-            const x = e.x * scale;
-            const y = e.y * scale;
+            const viewBox = getViewBox(drawingRef);
+            const x = viewBox.x + e.x * scale;
+            const y = viewBox.y + e.y * scale;
             if (stylusMode && e.type === 'touch') return;
             if (e.type === 'touch' && e.touches!.length > 1) {
                 return;
@@ -30,8 +32,9 @@ export const DestroyTool: React.FC = () => {
         };
         const onMove = (e: ToolEvent) => {
             if (e.type === 'mouse' && !e.buttons) return;
-            const x = e.x * scale;
-            const y = e.y * scale;
+            const viewBox = getViewBox(drawingRef);
+            const x = viewBox.x + e.x * scale;
+            const y = viewBox.y + e.y * scale;
             drawing.createGroup('cross', 'walls');
             drawing.drawLine({
                 id: `d${e.id}`,
@@ -58,8 +61,9 @@ export const DestroyTool: React.FC = () => {
             );
         };
         const onEnd = (e: ToolEvent) => {
-            const x = e.x * scale;
-            const y = e.y * scale;
+            const viewBox = getViewBox(drawingRef);
+            const x = viewBox.x + e.x * scale;
+            const y = viewBox.y + e.y * scale;
             const destroyLine = { id: `${e.id}`, p1: start!, p2: { x, y } };
             const destroyedWalls = plan.walls.filter((w) => crossLines(w, destroyLine, true));
             destroyedWalls.forEach((w) => drawing.removeElement(wallGroupId(w)));
@@ -75,7 +79,17 @@ export const DestroyTool: React.FC = () => {
         };
 
         return registerTool(interactiveRef.current, onStart, onMove, onEnd);
-    }, [commandsHistory, drawing, interactiveRef, plan, scale, selectedTool, stylusMode, setValue]);
+    }, [
+        scale,
+        stylusMode,
+        commandsHistory,
+        interactiveRef,
+        selectedTool,
+        drawingRef,
+        drawing,
+        plan,
+        setValue,
+    ]);
 
     return null;
 };

@@ -157,3 +157,16 @@ export const useGlobalContext = () => {
     }
     return context;
 };
+
+export function getViewBox(ref: React.RefObject<SVGSVGElement>) {
+    const viewBox = ref.current
+        ?.getAttribute('viewBox')
+        ?.split(' ')
+        .map((x) => parseInt(x)) ?? [0, 0];
+    return {
+        x: viewBox[0],
+        y: viewBox[1],
+        width: viewBox[2],
+        height: viewBox[3],
+    };
+}
