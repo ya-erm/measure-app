@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react';
 import { useWatch } from 'react-hook-form';
 import { DrawPoint } from '../Draw';
-import { getViewBox, IToolType, useGlobalContext } from '../GlobalContext';
+import { getViewBox, useGlobalContext } from '../GlobalContext';
 import { registerTool, ToolEvent } from './ToolEvent';
-
-const tools: IToolType[] = ['pencil', 'eraser'];
 
 export const PenTool: React.FC = () => {
     const { commandsHistory, interactiveRef, drawingRef, drawing, control, setValue } =
@@ -14,10 +12,19 @@ export const PenTool: React.FC = () => {
     const plan = useWatch({ control, name: 'plan' });
 
     useEffect(() => {
-        if (!interactiveRef.current || !tools.includes(selectedTool)) {
+        if (!interactiveRef.current) {
             return;
         }
-
+        switch (selectedTool) {
+            case 'pencil':
+                interactiveRef.current.style.cursor = 'crosshair';
+                break;
+            case 'eraser':
+                interactiveRef.current.style.cursor = 'url("/cursors/circle.svg") 12 12, auto';
+                break;
+            default:
+                return;
+        }
         let points: DrawPoint[] = [];
         let id: string | undefined;
 
@@ -29,7 +36,7 @@ export const PenTool: React.FC = () => {
         };
 
         const onStart = (e: ToolEvent) => {
-            if (stylusMode && e.type !== 'stylus') return;
+            if (stylusMode && e.type === 'touch') return;
             if (e.type === 'touch' && e.touches!.length > 1) return;
             setValue('pointerDown', true);
             const viewBox = getViewBox(drawingRef);
@@ -48,7 +55,7 @@ export const PenTool: React.FC = () => {
         };
 
         const onMove = (e: ToolEvent) => {
-            if (stylusMode && e.type !== 'stylus') return;
+            if (stylusMode && e.type === 'touch') return;
             if (e.type === 'mouse' && !e.buttons) return;
             const viewBox = getViewBox(drawingRef);
             const x = viewBox.x + e.x * scale;
@@ -61,7 +68,7 @@ export const PenTool: React.FC = () => {
         };
 
         const onEnd = (e: ToolEvent) => {
-            if (stylusMode && e.type !== 'stylus') return;
+            if (stylusMode && e.type === 'touch') return;
             const strokeOptions = getStrokeOptions();
             const path = { id, points, ...strokeOptions, groupId: 'pen' };
             plan.notes.push(path);

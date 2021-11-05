@@ -20,6 +20,7 @@ export const RoundButton: React.FC<IRoundButtonProps> = ({
 }) => {
     return (
         <div
+            role="button"
             title={title}
             className={clsx('roundButton', active && 'roundButtonActive', className)}
             onClick={onClick}

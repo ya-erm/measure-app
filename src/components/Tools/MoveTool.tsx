@@ -12,11 +12,16 @@ export const MoveTool: React.FC = () => {
         if (!interactiveRef.current || !drawingRef.current) {
             return;
         }
+        if (!stylusMode && selectedTool !== 'move') return;
+        if (selectedTool === 'move') {
+            interactiveRef.current.style.cursor = 'grab';
+        }
+
         let _startPoint: Point | undefined;
         let _startViewBox: Point | undefined;
 
         const onStart = (e: ToolEvent) => {
-            if (stylusMode && e.type === 'stylus' && selectedTool !== 'move') return;
+            if (stylusMode && e.type !== 'touch' && selectedTool !== 'move') return;
             if (e.touches?.length === 1) {
                 const x = e.x * scale;
                 const y = e.y * scale;
@@ -27,10 +32,11 @@ export const MoveTool: React.FC = () => {
                     ?.map((x) => parseInt(x)) ?? [0, 0];
                 _startViewBox = { x: viewBox[0], y: viewBox[1] };
                 setValue('pointerDown', true);
+                interactiveRef.current!.style.cursor = 'grabbing';
             }
         };
         const onMove = (e: ToolEvent) => {
-            if (stylusMode && e.type === 'stylus' && selectedTool !== 'move') return;
+            if (stylusMode && e.type !== 'touch' && selectedTool !== 'move') return;
             if (e.touches?.length === 1) {
                 const x = e.x * scale;
                 const y = e.y * scale;
@@ -53,9 +59,10 @@ export const MoveTool: React.FC = () => {
             }
         };
         const onEnd = (e: ToolEvent) => {
-            if (stylusMode && e.type === 'stylus' && selectedTool !== 'move') return;
+            if (stylusMode && e.type !== 'touch' && selectedTool !== 'move') return;
             _startPoint = undefined;
             _startViewBox = undefined;
+            interactiveRef.current!.style.cursor = 'grab';
             setValue('pointerDown', false);
         };
         return registerTool(interactiveRef.current, onStart, onMove, onEnd);

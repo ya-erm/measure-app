@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useWatch } from 'react-hook-form';
 import { ReactComponent as TrashIcon } from '../../assets/icons/delete.svg';
 import { ReactComponent as RedoIcon } from '../../assets/icons/redo.svg';
@@ -20,6 +21,21 @@ export const HistoryPanel: React.FC = () => {
             savePlan(plan);
         }
     };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.code === 'KeyZ') {
+                    commandsHistory.undo();
+                } else if (e.code === 'KeyY') {
+                    commandsHistory.redo();
+                }
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [commandsHistory]);
+
     return (
         <div className="historyPanel">
             <RoundButton title="Undo" onClick={commandsHistory.undo} icon={<UndoIcon />} />

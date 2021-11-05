@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Control, useForm, UseFormGetValues, UseFormSetValue } from 'react-hook-form';
 import { IDrawing, IDrawPathOptions, useDrawing } from '../hooks/useDrawing';
-import { drawWall, wallGroupId } from './Draw';
+import { drawWall, wallCircleRadius, wallGroupId } from './Draw';
+import { distanceBetween, pointProjection } from './Geometry';
 import { IHistory, useHistory } from './History/useHistory';
 
 export type IToolType = 'wall' | 'cursor' | 'move' | 'pencil' | 'eraser' | 'destroy';
@@ -114,7 +115,7 @@ export function erasePlan(drawing: IDrawing, plan: IPlan) {
 const defaultState: IGlobalState = {
     settings: loadSettings(),
     pointerDown: false,
-    scale: 2,
+    scale: 1,
     plan: loadPlan(),
 };
 
@@ -163,10 +164,25 @@ export function getViewBox(ref: React.RefObject<SVGSVGElement>) {
         ?.getAttribute('viewBox')
         ?.split(' ')
         .map((x) => parseInt(x)) ?? [0, 0];
+    const size = ref.current!.getBoundingClientRect();
     return {
         x: viewBox[0],
         y: viewBox[1],
         width: viewBox[2],
         height: viewBox[3],
+        ratio: size.width / viewBox[3],
     };
+}
+
+export function findNearPoints(plan: IPlan, x: number, y: number) {
+    return plan.walls
+        .flatMap((item) => [item.p1, item.p2])
+        .filter((p) => distanceBetween(p, { x, y }) <= wallCircleRadius);
+}
+
+export function findNearWall(plan: IPlan, x: number, y: number) {
+    return plan.walls.find((w) => {
+        const p = pointProjection({ x, y }, w, true);
+        return p && distanceBetween({ x, y }, p) < wallCircleRadius;
+    });
 }

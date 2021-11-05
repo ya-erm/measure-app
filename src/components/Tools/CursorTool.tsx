@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useWatch } from 'react-hook-form';
 import { drawGuideLines, drawWall, removeGuideLines, wallCircleRadius } from '../Draw';
-import { distanceBetween, findAllGuideLines, pointProjection } from '../Geometry';
-import { getViewBox, useGlobalContext, Wall } from '../GlobalContext';
+import { distanceBetween, findAllGuideLines } from '../Geometry';
+import { findNearPoints, findNearWall, getViewBox, useGlobalContext, Wall } from '../GlobalContext';
 import { registerTool, ToolEvent } from './ToolEvent';
 
 function cloneEditingWalls(walls: Wall[]): Wall[] {
@@ -35,49 +35,57 @@ export const CursorTool: React.FC = () => {
     const plan = useWatch({ control, name: 'plan' });
 
     useEffect(() => {
-        if (!interactiveRef.current || selectedTool !== 'cursor') {
-            return;
-        }
+        if (!interactiveRef.current || selectedTool !== 'cursor') return;
+        interactiveRef.current.style.cursor = 'default';
 
         let _wallBefore: Wall[] = [];
+        let _hoverWall: Wall | undefined;
         let _selectedWall: Wall | undefined;
 
         const onStart = (e: ToolEvent) => {
-            if (stylusMode && e.type !== 'stylus') return;
+            if (stylusMode && e.type === 'touch') return;
             setValue('pointerDown', true);
             const viewBox = getViewBox(drawingRef);
             e.changedTouches?.forEach((touch) => {
                 const id = touch.identifier;
                 const x = viewBox.x + touch.pageX * scale;
                 const y = viewBox.y + touch.pageY * scale;
-                const points = plan.walls
-                    .flatMap((item) => [item.p1, item.p2])
-                    .filter((p) => distanceBetween(p, { x, y }) <= wallCircleRadius)
-                    .map((p) => {
-                        p.editId = id;
-                        return p;
-                    });
+                const points = findNearPoints(plan, x, y);
+                points.forEach((p) => {
+                    p.editId = id;
+                });
 
-                const newSelectedWall =
-                    points.length === 0
-                        ? plan.walls.find((w) => {
-                              const p = pointProjection({ x, y }, w, true);
-                              return p && distanceBetween({ x, y }, p) < wallCircleRadius;
-                          })
-                        : undefined;
-
+                // Select wall if no editing points
+                const newSelectedWall = points.length === 0 ? findNearWall(plan, x, y) : undefined;
                 if (_selectedWall) drawWall(drawing, _selectedWall);
                 _selectedWall = newSelectedWall;
                 if (_selectedWall) drawWall(drawing, _selectedWall, '#00f');
                 setValue('selectedWall', _selectedWall);
 
+                if (points.length > 0) {
+                    interactiveRef.current!.style.cursor = 'move';
+                }
                 _wallBefore = cloneEditingWalls(plan.walls);
             });
         };
 
         const onMove = (e: ToolEvent) => {
-            if (e.type === 'mouse' && !e.buttons) return;
+            if (stylusMode && e.type === 'touch') return;
             const viewBox = getViewBox(drawingRef);
+            if (e.type === 'mouse') {
+                const x = viewBox.x + e.x * scale;
+                const y = viewBox.y + e.y * scale;
+                if (_hoverWall && _hoverWall !== _selectedWall) drawWall(drawing, _hoverWall);
+                _hoverWall = findNearWall(plan, x, y);
+                if (findNearPoints(plan, x, y).length > 0) {
+                    interactiveRef.current!.style.cursor = e.buttons ? 'move' : 'pointer';
+                } else if (_hoverWall) {
+                    drawWall(drawing, _hoverWall, 'blue');
+                    interactiveRef.current!.style.cursor = 'pointer';
+                } else {
+                    interactiveRef.current!.style.cursor = 'default';
+                }
+            }
             e.changedTouches?.forEach((touch) => {
                 const id = touch.identifier;
                 const x = viewBox.x + touch.pageX * scale;
@@ -100,7 +108,17 @@ export const CursorTool: React.FC = () => {
         };
 
         const onEnd = (e: ToolEvent) => {
-            if (stylusMode && e.type !== 'stylus') return;
+            if (stylusMode && e.type === 'touch') return;
+            const viewBox = getViewBox(drawingRef);
+            if (e.type === 'mouse') {
+                const x = viewBox.x + e.x * scale;
+                const y = viewBox.x + e.y * scale;
+                if (findNearPoints(plan, x, y).length > 0 || findNearWall(plan, x, y)) {
+                    interactiveRef.current!.style.cursor = 'pointer';
+                } else {
+                    interactiveRef.current!.style.cursor = 'default';
+                }
+            }
             e.changedTouches?.forEach((touch) => {
                 const id = touch.identifier;
                 plan.walls
@@ -126,6 +144,15 @@ export const CursorTool: React.FC = () => {
                             const w2 = _wallBefore.find((x) => x.id === w.id);
                             return w2 && !areWallsCoordinatesEqual(w, w2);
                         }).length > 0;
+
+                plan.walls
+                    .filter((w) => w.p1.editId || w.p2.editId)
+                    .forEach((w) => {
+                        w.p1.editId = undefined;
+                        w.p2.editId = undefined;
+                        drawWall(drawing, w);
+                    });
+
                 if (isAnyWallMoved) {
                     commandsHistory.add({
                         tool: 'cursor',
@@ -135,14 +162,6 @@ export const CursorTool: React.FC = () => {
                         },
                     });
                 }
-
-                plan.walls
-                    .filter((w) => w.p1.editId || w.p2.editId)
-                    .forEach((w) => {
-                        w.p1.editId = undefined;
-                        w.p2.editId = undefined;
-                        drawWall(drawing, w);
-                    });
                 removeGuideLines(drawing, { editId: id, x: 0, y: 0 });
             });
             if (!e.touches || e.touches?.length === 0) {
@@ -150,7 +169,15 @@ export const CursorTool: React.FC = () => {
             }
         };
 
-        return registerTool(interactiveRef.current, onStart, onMove, onEnd);
+        const unsubscribe = registerTool(interactiveRef.current, onStart, onMove, onEnd);
+        return () => {
+            unsubscribe();
+            if (_hoverWall) drawWall(drawing, _hoverWall);
+            if (_selectedWall) {
+                drawWall(drawing, _selectedWall);
+                setValue('selectedWall', undefined);
+            }
+        };
     }, [
         scale,
         stylusMode,
@@ -162,6 +189,7 @@ export const CursorTool: React.FC = () => {
         plan.walls,
         drawingRef,
         drawing,
+        plan,
         setValue,
     ]);
 

@@ -89,7 +89,6 @@ export function useHistory(drawing: IDrawing, plan: IPlan): IHistory {
                             plan.walls
                                 .filter((w) => w.id === wall.id)
                                 .forEach((w) => {
-                                    debugger;
                                     restoreFrom(wall, w);
                                     drawWall(drawing, w);
                                 });

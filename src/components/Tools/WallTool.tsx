@@ -26,6 +26,7 @@ export const WallTool: React.FC = () => {
         if (!interactiveRef.current || selectedTool !== 'wall') {
             return;
         }
+        interactiveRef.current.style.cursor = 'crosshair';
 
         const cancel = (id: number) => {
             const wallIndex = plan.walls.findIndex((x) => x.editId === id);
@@ -37,15 +38,15 @@ export const WallTool: React.FC = () => {
         };
 
         const onStart = (e: ToolEvent) => {
+            if (stylusMode && e.type === 'touch') return;
+            if (e.type === 'touch' && e.touches.length > 1) {
+                setValue('pointerDown', false);
+                cancel(e.touches[0].identifier);
+                return;
+            }
             const viewBox = getViewBox(drawingRef);
             const x = viewBox.x + e.x * scale;
             const y = viewBox.y + e.y * scale;
-            if (stylusMode && e.type !== 'stylus') return;
-            if (e.type === 'touch' && e.touches!.length > 1) {
-                setValue('pointerDown', false);
-                cancel(e.touches![0].identifier);
-                return;
-            }
             setValue('pointerDown', true);
             const wallId =
                 plan.walls.length > 0
@@ -77,6 +78,7 @@ export const WallTool: React.FC = () => {
         };
 
         const onMove = (e: ToolEvent) => {
+            if (stylusMode && e.type === 'touch') return;
             if (e.type === 'mouse' && !e.buttons) return;
             const viewBox = getViewBox(drawingRef);
             const x = viewBox.x + e.x * scale;
@@ -100,6 +102,7 @@ export const WallTool: React.FC = () => {
         };
 
         const onEnd = (e: ToolEvent) => {
+            if (stylusMode && e.type === 'touch') return;
             const wall = plan.walls.find((x) => x.editId === e.id);
             if (wall) {
                 if (magneticMode) {

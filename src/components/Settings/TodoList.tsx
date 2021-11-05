@@ -13,7 +13,6 @@ export const TodoList: React.FC = () => {
                 <li>translate app</li>
                 <li>store history</li>
                 <li>keyboard fix</li>
-                <li>toolbox hotkeys</li>
                 <li>pen color, width</li>
             </ol>
         </div>

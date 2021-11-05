@@ -30,7 +30,7 @@ export const wallCircleRadius = 16;
 export const wallGroupId = (wall: Line) => `w${wall.id}`;
 export const pointGroupId = (point: Point) => `p${point.editId}`;
 
-export function drawWallStart(ctx: Context, wall: Line) {
+export function drawWallStart(ctx: Context, wall: Line, stroke?: string) {
     ctx.drawRect({
         id: `w${wall.id}s`,
         groupId: wallGroupId(wall),
@@ -39,11 +39,11 @@ export function drawWallStart(ctx: Context, wall: Line) {
         width: wallPointSize,
         height: wallPointSize,
         strokeWidth: 1,
-        stroke: '#000',
+        stroke: stroke ?? '#000',
         fill: '#bbb',
     });
 }
-export function drawWallEnd(ctx: Context, wall: Line) {
+export function drawWallEnd(ctx: Context, wall: Line, stroke?: string) {
     ctx.drawRect({
         id: `w${wall.id}e`,
         groupId: wallGroupId(wall),
@@ -52,7 +52,7 @@ export function drawWallEnd(ctx: Context, wall: Line) {
         width: wallPointSize,
         height: wallPointSize,
         strokeWidth: 1,
-        stroke: '#000',
+        stroke: stroke ?? '#000',
         fill: '#bbb',
     });
 }
@@ -127,8 +127,8 @@ export function drawWall(ctx: Context, wall: Wall, color = '#000') {
         ctx.removeElement(`w${wall.id}r`, bodyId);
     }
     if (!wall.type || wall.type === 'wall' || wall.type === 'door') {
-        drawWallStart(ctx, wall);
-        drawWallEnd(ctx, wall);
+        drawWallStart(ctx, wall, color);
+        drawWallEnd(ctx, wall, color);
     } else {
         ctx.removeElement(`w${wall.id}s`, groupId);
         ctx.removeElement(`w${wall.id}e`, groupId);
