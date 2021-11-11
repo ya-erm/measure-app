@@ -112,7 +112,7 @@ export const CursorTool: React.FC = () => {
             const viewBox = getViewBox(drawingRef);
             if (e.type === 'mouse') {
                 const x = viewBox.x + e.x * scale;
-                const y = viewBox.x + e.y * scale;
+                const y = viewBox.y + e.y * scale;
                 if (findNearPoints(plan, x, y).length > 0 || findNearWall(plan, x, y)) {
                     interactiveRef.current!.style.cursor = 'pointer';
                 } else {

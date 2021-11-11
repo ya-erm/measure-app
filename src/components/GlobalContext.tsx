@@ -125,7 +125,7 @@ export function useGlobalState(): IGlobalContext {
     });
     const scale = defaultState.scale;
     const plan = defaultState.plan;
-    console.log('useGlobalState', plan);
+    // console.log('useGlobalState', plan);
 
     const { svgRef: drawingRef, drawing } = useDrawing(scale);
     const commandsHistory = useHistory(drawing, plan);

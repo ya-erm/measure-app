@@ -10,7 +10,7 @@ import { DestroyTool } from './components/Tools/DestroyTool';
 import { HistoryTool } from './components/Tools/HistoryTool';
 import { MoveTool } from './components/Tools/MoveTool';
 import { PenTool } from './components/Tools/PenTool';
-import { Toolbox } from './components/Tools/Toolbox';
+import { Toolbox } from './components/Tools/Toolbox/Toolbox';
 import { WallTool } from './components/Tools/WallTool';
 
 function App() {
