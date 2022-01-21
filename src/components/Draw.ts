@@ -24,8 +24,8 @@ export function drawCircle(
     ctx.drawCircle({ id, groupId, x: xc, y: yc, rx: radius, ry: radius, fill, stroke });
 }
 
-export const wallPointSize = 12;
-export const wallCircleRadius = 16;
+export const wallPointSize = 6;
+export const wallCircleRadius = 8;
 
 export const wallGroupId = (wall: Line) => `w${wall.id}`;
 export const pointGroupId = (point: Point) => `p${point.editId}`;
@@ -36,11 +36,12 @@ export function drawWallStart(ctx: Context, wall: Line, stroke?: string) {
         groupId: wallGroupId(wall),
         cx: wall.p1.x,
         cy: wall.p1.y,
+        angle: getAngle(wall.p1, wall.p2),
         width: wallPointSize,
         height: wallPointSize,
         strokeWidth: 1,
-        stroke: stroke ?? '#000',
-        fill: '#bbb',
+        stroke: '#666',
+        fill: '#666',
     });
 }
 export function drawWallEnd(ctx: Context, wall: Line, stroke?: string) {
@@ -49,15 +50,16 @@ export function drawWallEnd(ctx: Context, wall: Line, stroke?: string) {
         groupId: wallGroupId(wall),
         cx: wall.p2.x,
         cy: wall.p2.y,
+        angle: getAngle(wall.p1, wall.p2),
         width: wallPointSize,
         height: wallPointSize,
         strokeWidth: 1,
         stroke: stroke ?? '#000',
-        fill: '#bbb',
+        fill: '#666',
     });
 }
 
-export function drawWall(ctx: Context, wall: Wall, color = '#000') {
+export function drawWall(ctx: Context, wall: Wall, color = '#666') {
     const groupId = ctx.createGroup(wallGroupId(wall), 'walls');
     const bodyId = ctx.createGroup(`${groupId}.body`, groupId);
     // drawCircle(ctx, `w${wall.id}c1`, groupId, wall.p1.x, wall.p1.y, wallCircleRadius, 'none', '#000');
@@ -69,11 +71,11 @@ export function drawWall(ctx: Context, wall: Wall, color = '#000') {
             cx: (wall.p1.x + wall.p2.x) / 2,
             cy: (wall.p1.y + wall.p2.y) / 2,
             angle: getAngle(wall.p1, wall.p2),
-            width: distanceBetween(wall.p1, wall.p2),
+            width: distanceBetween(wall.p1, wall.p2) - wallPointSize,
             height: wall.type === 'window' ? wallPointSize / 2 : wallPointSize,
             strokeWidth: 1,
             stroke: color,
-            fill: wall.type === 'window' ? 'none' : '#ccc',
+            fill: wall.type === 'window' ? 'none' : color,
         });
         ctx.removeElement(`w${wall.id}l`, bodyId);
         ctx.removeElement(`w${wall.id}d`, bodyId);
@@ -150,8 +152,8 @@ function drawLengths(ctx: Context, wall: Wall, color: string) {
             groupId: gid,
             id: `w${wall.id}t1`,
             text: `${wall.topText}`,
-            x: cx - 20 * Math.sin(alpha),
-            y: cy - 20 * Math.cos(alpha),
+            x: cx - 14 * Math.sin(alpha),
+            y: cy - 14 * Math.cos(alpha),
             fill: color,
             angle,
         });
@@ -164,8 +166,8 @@ function drawLengths(ctx: Context, wall: Wall, color: string) {
             groupId: gid,
             id: `w${wall.id}t2`,
             text: `${wall.bottomText}`,
-            x: cx + 20 * Math.sin(alpha),
-            y: cy + 22 * Math.cos(alpha),
+            x: cx + 14 * Math.sin(alpha),
+            y: cy + 14 * Math.cos(alpha),
             fill: color,
             angle,
         });

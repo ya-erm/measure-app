@@ -161,9 +161,9 @@ function setArcOptions(arc: Element, options: IDrawArcOptions) {
 
 function setTextOptions(element: Element, options: IDrawTextOptions) {
     setCommonOptions(element, options);
-    const { x, y, angle = 0, rx, ry, fontSize = 20, text } = options;
+    const { x, y, angle = 0, rx, ry, fontSize = 14, text } = options;
     element.setAttribute('x', x.toString());
-    element.setAttribute('y', (y + 8).toString());
+    element.setAttribute('y', (y + 6).toString());
     element.setAttribute('style', `text-anchor: middle; font-size: ${fontSize}px`);
     element.setAttribute('transform', `rotate(${angle}, ${rx ?? x}, ${ry ?? y})`);
     element.textContent = text;
